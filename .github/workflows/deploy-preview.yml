@@ -44,7 +44,7 @@ jobs:
           elif [ -f package.json ]; then
             echo "dir=." >> "$GITHUB_OUTPUT"
           else
-            echo "No package.json found at apps/web/package.json or repo root. The app source has not been pushed to GitHub."
+            echo "No package.json found at apps/web/package.json or repo root."
             exit 1
           fi
 
@@ -61,9 +61,13 @@ jobs:
             echo "manager=yarn" >> "$GITHUB_OUTPUT"
             echo "install=yarn install --frozen-lockfile" >> "$GITHUB_OUTPUT"
             echo "build=yarn build" >> "$GITHUB_OUTPUT"
-          else
+          elif [ -f package-lock.json ]; then
             echo "manager=npm" >> "$GITHUB_OUTPUT"
             echo "install=npm ci" >> "$GITHUB_OUTPUT"
+            echo "build=npm run build" >> "$GITHUB_OUTPUT"
+          else
+            echo "manager=npm" >> "$GITHUB_OUTPUT"
+            echo "install=npm install" >> "$GITHUB_OUTPUT"
             echo "build=npm run build" >> "$GITHUB_OUTPUT"
           fi
 
@@ -79,6 +83,8 @@ jobs:
 
       - name: Build app
         working-directory: ${{ steps.app.outputs.dir }}
+        env:
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
         run: ${{ steps.pm.outputs.build }}
 
       - name: Detect build output directory
@@ -92,12 +98,6 @@ jobs:
             echo "dir=$APP_DIR/dist" >> "$GITHUB_OUTPUT"
           elif [ -d "$APP_DIR/build" ]; then
             echo "dir=$APP_DIR/build" >> "$GITHUB_OUTPUT"
-          elif [ -d out ]; then
-            echo "dir=out" >> "$GITHUB_OUTPUT"
-          elif [ -d dist ]; then
-            echo "dir=dist" >> "$GITHUB_OUTPUT"
-          elif [ -d build ]; then
-            echo "dir=build" >> "$GITHUB_OUTPUT"
           else
             echo "Could not find static build output directory. Expected out, dist, or build."
             exit 1
