@@ -1,0 +1,85 @@
+name: Visual Audit
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/visual-audit.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  screenshot:
+    name: Build and Screenshot Wolfie
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install app dependencies
+        run: npm install
+
+      - name: Install visual audit tools
+        run: npm install --no-save @playwright/test serve
+
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Build app
+        env:
+          NEXT_PUBLIC_BASE_PATH: ""
+        run: npm run build
+
+      - name: Serve app and capture screenshots
+        run: |
+          npx serve out -l 4173 > /tmp/wolfie-serve.log 2>&1 &
+          sleep 5
+          node <<'NODE'
+          const { chromium } = require('@playwright/test');
+          const fs = require('fs');
+          const path = require('path');
+
+          async function main() {
+            const browser = await chromium.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1440, height: 1200 }, deviceScaleFactor: 1 });
+            await page.goto('http://127.0.0.1:4173/', { waitUntil: 'networkidle' });
+            await page.screenshot({ path: 'wolfie-overview.png', fullPage: true });
+            const summary = await page.evaluate(() => ({
+              title: document.title,
+              bodyText: document.body.innerText.slice(0, 4000),
+              hasCapitalQuestion: document.body.innerText.includes('How much do you want Wolfie to trade with?'),
+              hasEditCapital: document.body.innerText.includes('Edit Capital'),
+              hasSimulatedLive: document.body.innerText.includes('Simulated') && document.body.innerText.includes('Live'),
+              hasForbiddenTickerText: document.body.innerText.includes('Twinkies') || document.body.innerText.includes('Warren Buffett'),
+              imageCount: document.images.length
+            }));
+            fs.writeFileSync('wolfie-visual-summary.json', JSON.stringify(summary, null, 2));
+            await browser.close();
+          }
+
+          main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+
+      - name: Upload visual audit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wolfie-visual-audit
+          path: |
+            apps/web/wolfie-overview.png
+            apps/web/wolfie-visual-summary.json
+          if-no-files-found: error
