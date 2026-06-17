@@ -1,0 +1,125 @@
+name: Deploy Preview
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - "**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
+
+concurrency:
+  group: "wolfie-preview"
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    name: Build and Deploy Preview
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Locate web app
+        id: app
+        shell: bash
+        run: |
+          if [ -f apps/web/package.json ]; then
+            echo "dir=apps/web" >> "$GITHUB_OUTPUT"
+          elif [ -f package.json ]; then
+            echo "dir=." >> "$GITHUB_OUTPUT"
+          else
+            echo "No package.json found at apps/web/package.json or repo root. The app source has not been pushed to GitHub."
+            exit 1
+          fi
+
+      - name: Detect package manager
+        id: pm
+        shell: bash
+        working-directory: ${{ steps.app.outputs.dir }}
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            echo "manager=pnpm" >> "$GITHUB_OUTPUT"
+            echo "install=pnpm install --frozen-lockfile" >> "$GITHUB_OUTPUT"
+            echo "build=pnpm build" >> "$GITHUB_OUTPUT"
+          elif [ -f yarn.lock ]; then
+            echo "manager=yarn" >> "$GITHUB_OUTPUT"
+            echo "install=yarn install --frozen-lockfile" >> "$GITHUB_OUTPUT"
+            echo "build=yarn build" >> "$GITHUB_OUTPUT"
+          else
+            echo "manager=npm" >> "$GITHUB_OUTPUT"
+            echo "install=npm ci" >> "$GITHUB_OUTPUT"
+            echo "build=npm run build" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup pnpm
+        if: steps.pm.outputs.manager == 'pnpm'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        working-directory: ${{ steps.app.outputs.dir }}
+        run: ${{ steps.pm.outputs.install }}
+
+      - name: Build app
+        working-directory: ${{ steps.app.outputs.dir }}
+        run: ${{ steps.pm.outputs.build }}
+
+      - name: Detect build output directory
+        id: build_output
+        shell: bash
+        run: |
+          APP_DIR="${{ steps.app.outputs.dir }}"
+          if [ -d "$APP_DIR/out" ]; then
+            echo "dir=$APP_DIR/out" >> "$GITHUB_OUTPUT"
+          elif [ -d "$APP_DIR/dist" ]; then
+            echo "dir=$APP_DIR/dist" >> "$GITHUB_OUTPUT"
+          elif [ -d "$APP_DIR/build" ]; then
+            echo "dir=$APP_DIR/build" >> "$GITHUB_OUTPUT"
+          elif [ -d out ]; then
+            echo "dir=out" >> "$GITHUB_OUTPUT"
+          elif [ -d dist ]; then
+            echo "dir=dist" >> "$GITHUB_OUTPUT"
+          elif [ -d build ]; then
+            echo "dir=build" >> "$GITHUB_OUTPUT"
+          else
+            echo "Could not find static build output directory. Expected out, dist, or build."
+            exit 1
+          fi
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.build_output.outputs.dir }}
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Write deployment summary
+        shell: bash
+        run: |
+          echo "## Wolfie Preview Deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Preview URL: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Expected URL: https://jetpepper.github.io/Wolfie/" >> "$GITHUB_STEP_SUMMARY"
