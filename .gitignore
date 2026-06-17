@@ -7,3 +7,4 @@ data/*.sqlite
 data/*.sqlite3
 apps/web/.next/
 apps/web/node_modules/
+.DS_Store
