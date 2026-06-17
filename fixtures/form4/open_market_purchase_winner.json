@@ -1,0 +1,21 @@
+{
+  "accession_number": "sim-form4-purchase-winner-001",
+  "issuer_name": "Apple Inc.",
+  "issuer_cik": "0000320193",
+  "ticker": "AAPL",
+  "owner_name": "Jane Example",
+  "owner_cik": "0000000001",
+  "owner_role": "CEO",
+  "transaction_date": "2026-06-10",
+  "filing_date": "2026-06-11",
+  "transaction_code": "P",
+  "shares": 6000,
+  "price": 195,
+  "dollar_value": 1170000,
+  "ownership_after": 31000,
+  "direct_or_indirect": "D",
+  "is_10b5_1": false,
+  "source_mode": "SIM_REPLAY_DATA",
+  "status": "simulated",
+  "scenario_id": "phase5_open_market_purchase_winner"
+}

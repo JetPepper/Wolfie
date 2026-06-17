@@ -1,0 +1,28 @@
+{
+  "event_id": "sim-social-hype-fade-001",
+  "source_type": "stocktwits",
+  "source_name": "Simulated Social Tape",
+  "headline": "AAPL hype fades",
+  "body": "AAPL hype is fading after weak follow-through and fading volume.",
+  "published_at": "2026-06-12T17:00:00Z",
+  "engagement": {
+    "mentions": 300,
+    "shares": 35,
+    "replies": 90,
+    "minutes_observed": 40
+  },
+  "market_data": {
+    "symbol": "AAPL",
+    "previous_close": 194,
+    "last": 192,
+    "bid": 191.8,
+    "ask": 192.2,
+    "volume": 800000,
+    "average_volume": 1000000,
+    "source_mode": "SIM_REPLAY_DATA",
+    "status": "simulated"
+  },
+  "source_mode": "SIM_REPLAY_DATA",
+  "status": "simulated",
+  "scenario_id": "phase5_social_hype_fade"
+}

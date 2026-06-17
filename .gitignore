@@ -1,0 +1,9 @@
+.codex/
+.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+data/*.sqlite
+data/*.sqlite3
+apps/web/.next/
+apps/web/node_modules/

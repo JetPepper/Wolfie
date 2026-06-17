@@ -1,0 +1,28 @@
+{
+  "event_id": "sim-social-rumor-001",
+  "source_type": "reddit",
+  "source_name": "Simulated Rumor Thread",
+  "headline": "AAPL moon rumor",
+  "body": "Unconfirmed rumor says AAPL will moon 100x. Guaranteed pump.",
+  "published_at": "2026-06-12T18:00:00Z",
+  "engagement": {
+    "mentions": 900,
+    "shares": 200,
+    "replies": 300,
+    "minutes_observed": 20
+  },
+  "market_data": {
+    "symbol": "AAPL",
+    "previous_close": 194,
+    "last": 194.2,
+    "bid": 193.9,
+    "ask": 194.5,
+    "volume": 500000,
+    "average_volume": 1000000,
+    "source_mode": "SIM_REPLAY_DATA",
+    "status": "simulated"
+  },
+  "source_mode": "SIM_REPLAY_DATA",
+  "status": "simulated",
+  "scenario_id": "phase5_rumor_no_trade"
+}

@@ -1,0 +1,28 @@
+{
+  "event_id": "sim-news-breakout-001",
+  "source_type": "simulated_news",
+  "source_name": "Wolfie Fixture Wire",
+  "headline": "AAPL raises guidance after strong product demand",
+  "body": "Breaking: Apple raises guidance after strong product demand and confirmed volume breakout.",
+  "published_at": "2026-06-12T14:00:00Z",
+  "engagement": {
+    "mentions": 400,
+    "shares": 120,
+    "replies": 35,
+    "minutes_observed": 30
+  },
+  "market_data": {
+    "symbol": "AAPL",
+    "previous_close": 194,
+    "last": 199,
+    "bid": 198.9,
+    "ask": 199.1,
+    "volume": 2500000,
+    "average_volume": 1000000,
+    "source_mode": "SIM_REPLAY_DATA",
+    "status": "simulated"
+  },
+  "source_mode": "SIM_REPLAY_DATA",
+  "status": "simulated",
+  "scenario_id": "phase5_news_breakout_continuation"
+}

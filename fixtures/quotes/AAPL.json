@@ -1,0 +1,10 @@
+{
+  "symbol": "AAPL",
+  "bid": 195.1,
+  "ask": 195.2,
+  "last": 195.15,
+  "volume": 1000000,
+  "timestamp": "2026-06-16T20:00:00Z",
+  "status": "simulated",
+  "source_name": "RobinhoodSimMCPServer"
+}

@@ -1,0 +1,31 @@
+{
+  "symbol": "AAPL",
+  "timeframe": "1d",
+  "status": "simulated",
+  "candles": [
+    {
+      "timestamp": "2026-06-10T20:00:00Z",
+      "open": 192.4,
+      "high": 196.1,
+      "low": 191.8,
+      "close": 195.15,
+      "volume": 1120000
+    },
+    {
+      "timestamp": "2026-06-11T20:00:00Z",
+      "open": 195.2,
+      "high": 197.0,
+      "low": 193.9,
+      "close": 194.75,
+      "volume": 980000
+    },
+    {
+      "timestamp": "2026-06-12T20:00:00Z",
+      "open": 194.9,
+      "high": 196.4,
+      "low": 193.2,
+      "close": 195.15,
+      "volume": 1000000
+    }
+  ]
+}

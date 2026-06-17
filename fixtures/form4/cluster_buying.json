@@ -1,0 +1,49 @@
+{
+  "events": [
+    {
+      "accession_number": "sim-form4-cluster-001",
+      "issuer_name": "Apple Inc.",
+      "issuer_cik": "0000320193",
+      "ticker": "AAPL",
+      "owner_name": "Cluster Buyer One",
+      "owner_cik": "0000000004",
+      "owner_role": "CFO",
+      "transaction_date": "2026-06-01",
+      "filing_date": "2026-06-02",
+      "transaction_code": "P",
+      "shares": 3000,
+      "price": 191,
+      "dollar_value": 573000,
+      "ownership_after": 12000,
+      "direct_or_indirect": "D",
+      "is_10b5_1": false,
+      "source_mode": "SIM_REPLAY_DATA",
+      "status": "simulated",
+      "scenario_id": "phase5_cluster_buying"
+    },
+    {
+      "accession_number": "sim-form4-cluster-002",
+      "issuer_name": "Apple Inc.",
+      "issuer_cik": "0000320193",
+      "ticker": "AAPL",
+      "owner_name": "Cluster Buyer Two",
+      "owner_cik": "0000000005",
+      "owner_role": "Director",
+      "transaction_date": "2026-06-06",
+      "filing_date": "2026-06-07",
+      "transaction_code": "P",
+      "shares": 4500,
+      "price": 193,
+      "dollar_value": 868500,
+      "ownership_after": 15000,
+      "direct_or_indirect": "D",
+      "is_10b5_1": false,
+      "source_mode": "SIM_REPLAY_DATA",
+      "status": "simulated",
+      "scenario_id": "phase5_cluster_buying"
+    }
+  ],
+  "source_mode": "SIM_REPLAY_DATA",
+  "status": "simulated",
+  "scenario_id": "phase5_cluster_buying"
+}

@@ -1,0 +1,28 @@
+{
+  "event_id": "sim-social-hype-momentum-001",
+  "source_type": "reddit",
+  "source_name": "Simulated Retail Thread",
+  "headline": "AAPL demand thread accelerating",
+  "body": "Apple demand looks strong and AAPL mentions are surging after product launch chatter.",
+  "published_at": "2026-06-12T15:00:00Z",
+  "engagement": {
+    "mentions": 700,
+    "shares": 80,
+    "replies": 140,
+    "minutes_observed": 35
+  },
+  "market_data": {
+    "symbol": "AAPL",
+    "previous_close": 194,
+    "last": 198,
+    "bid": 197.9,
+    "ask": 198.1,
+    "volume": 2200000,
+    "average_volume": 1000000,
+    "source_mode": "SIM_REPLAY_DATA",
+    "status": "simulated"
+  },
+  "source_mode": "SIM_REPLAY_DATA",
+  "status": "simulated",
+  "scenario_id": "phase5_social_hype_momentum"
+}

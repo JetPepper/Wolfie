@@ -1,0 +1,28 @@
+{
+  "event_id": "sim-news-fade-001",
+  "source_type": "simulated_news",
+  "source_name": "Wolfie Fixture Wire",
+  "headline": "AAPL spike fades after cautious guidance details",
+  "body": "AAPL demand looks mixed and early spike faded after cautious guidance details.",
+  "published_at": "2026-06-12T16:00:00Z",
+  "engagement": {
+    "mentions": 220,
+    "shares": 60,
+    "replies": 42,
+    "minutes_observed": 45
+  },
+  "market_data": {
+    "symbol": "AAPL",
+    "previous_close": 194,
+    "last": 193,
+    "bid": 192.9,
+    "ask": 193.2,
+    "volume": 1500000,
+    "average_volume": 1000000,
+    "source_mode": "SIM_REPLAY_DATA",
+    "status": "simulated"
+  },
+  "source_mode": "SIM_REPLAY_DATA",
+  "status": "simulated",
+  "scenario_id": "phase5_news_spike_fade"
+}

@@ -1,0 +1,21 @@
+{
+  "accession_number": "sim-form4-award-001",
+  "issuer_name": "Apple Inc.",
+  "issuer_cik": "0000320193",
+  "ticker": "AAPL",
+  "owner_name": "Award Recipient",
+  "owner_cik": "0000000003",
+  "owner_role": "Director",
+  "transaction_date": "2026-06-14",
+  "filing_date": "2026-06-15",
+  "transaction_code": "A",
+  "shares": 1000,
+  "price": 0,
+  "dollar_value": 0,
+  "ownership_after": 8000,
+  "direct_or_indirect": "D",
+  "is_10b5_1": false,
+  "source_mode": "SIM_REPLAY_DATA",
+  "status": "simulated",
+  "scenario_id": "phase5_routine_award_downweighted"
+}

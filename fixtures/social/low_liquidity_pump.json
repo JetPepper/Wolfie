@@ -1,0 +1,28 @@
+{
+  "event_id": "sim-social-low-liquidity-pump-001",
+  "source_type": "creator",
+  "source_name": "Simulated Creator Clip",
+  "headline": "AAPL guaranteed pump claim",
+  "body": "Creator claims guaranteed pump with no confirmation and thin liquidity.",
+  "published_at": "2026-06-12T18:30:00Z",
+  "engagement": {
+    "mentions": 1200,
+    "shares": 300,
+    "replies": 450,
+    "minutes_observed": 15
+  },
+  "market_data": {
+    "symbol": "AAPL",
+    "previous_close": 194,
+    "last": 194.1,
+    "bid": 192.5,
+    "ask": 195.5,
+    "volume": 20000,
+    "average_volume": 1000000,
+    "source_mode": "SIM_REPLAY_DATA",
+    "status": "simulated"
+  },
+  "source_mode": "SIM_REPLAY_DATA",
+  "status": "simulated",
+  "scenario_id": "phase5_low_liquidity_pump"
+}
