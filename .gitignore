@@ -7,4 +7,5 @@ data/*.sqlite
 data/*.sqlite3
 apps/web/.next/
 apps/web/node_modules/
+apps/web/out/
 .DS_Store

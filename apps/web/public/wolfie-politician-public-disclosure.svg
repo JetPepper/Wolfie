@@ -1,1 +1,9 @@
-<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="128" height="128" rx="28" fill="#0B1220"/><path d="M26 99H102" stroke="#C4B5FD" stroke-width="5" stroke-linecap="round"/><path d="M35 52H93V96H35V52Z" fill="#F8FAFC" stroke="#EDE9FE" stroke-width="4"/><path d="M45 64H83M45 76H75M45 88H88" stroke="#1E1B4B" stroke-width="5" stroke-linecap="round"/><path d="M63 18L89 43H37L63 18Z" fill="#38D996" stroke="#BBF7D0" stroke-width="4" stroke-linejoin="round"/><circle cx="63" cy="39" r="6" fill="#07101D"/></svg>
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="128" height="128" rx="28" fill="#0B1220"/>
+  <path d="M26 99H102" stroke="#C4B5FD" stroke-width="5" stroke-linecap="round"/>
+  <path d="M35 52H93V96H35V52Z" fill="url(#paper)" stroke="#EDE9FE" stroke-width="4"/>
+  <path d="M45 64H83M45 76H75M45 88H88" stroke="#1E1B4B" stroke-width="5" stroke-linecap="round"/>
+  <path d="M63 18L89 43H37L63 18Z" fill="#38D996" stroke="#BBF7D0" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="63" cy="39" r="6" fill="#07101D"/>
+  <defs><linearGradient id="paper" x1="35" y1="52" x2="91" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#F8FAFC"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs>
+</svg>

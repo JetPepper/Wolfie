@@ -25,34 +25,15 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Locate web app
-        id: app
-        shell: bash
-        run: |
-          if [ -f apps/web/package.json ]; then
-            echo "dir=apps/web" >> "$GITHUB_OUTPUT"
-          elif [ -f package.json ]; then
-            echo "dir=." >> "$GITHUB_OUTPUT"
-          else
-            echo "No package.json found at apps/web/package.json or repo root."
-            exit 1
-          fi
-
       - name: Detect package manager
         id: pm
         shell: bash
-        working-directory: ${{ steps.app.outputs.dir }}
         run: |
+          cd apps/web
           if [ -f pnpm-lock.yaml ]; then
             echo "manager=pnpm" >> "$GITHUB_OUTPUT"
             echo "install=pnpm install --frozen-lockfile" >> "$GITHUB_OUTPUT"
@@ -66,9 +47,8 @@ jobs:
             echo "install=npm ci" >> "$GITHUB_OUTPUT"
             echo "build=npm run build" >> "$GITHUB_OUTPUT"
           else
-            echo "manager=npm" >> "$GITHUB_OUTPUT"
-            echo "install=npm install" >> "$GITHUB_OUTPUT"
-            echo "build=npm run build" >> "$GITHUB_OUTPUT"
+            echo "Could not find a supported lockfile in apps/web."
+            exit 1
           fi
 
       - name: Setup pnpm
@@ -77,34 +57,41 @@ jobs:
         with:
           version: 9
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: ${{ steps.pm.outputs.manager }}
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+
       - name: Install dependencies
-        working-directory: ${{ steps.app.outputs.dir }}
+        working-directory: apps/web
         run: ${{ steps.pm.outputs.install }}
 
       - name: Build app
-        working-directory: ${{ steps.app.outputs.dir }}
+        working-directory: apps/web
         env:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
         run: ${{ steps.pm.outputs.build }}
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Detect build output directory
         id: build_output
         shell: bash
         run: |
-          APP_DIR="${{ steps.app.outputs.dir }}"
-          if [ -d "$APP_DIR/out" ]; then
-            echo "dir=$APP_DIR/out" >> "$GITHUB_OUTPUT"
-          elif [ -d "$APP_DIR/dist" ]; then
-            echo "dir=$APP_DIR/dist" >> "$GITHUB_OUTPUT"
-          elif [ -d "$APP_DIR/build" ]; then
-            echo "dir=$APP_DIR/build" >> "$GITHUB_OUTPUT"
+          cd apps/web
+          if [ -d dist ]; then
+            echo "dir=apps/web/dist" >> "$GITHUB_OUTPUT"
+          elif [ -d build ]; then
+            echo "dir=apps/web/build" >> "$GITHUB_OUTPUT"
+          elif [ -d out ]; then
+            echo "dir=apps/web/out" >> "$GITHUB_OUTPUT"
           else
-            echo "Could not find static build output directory. Expected out, dist, or build."
+            echo "Could not find static build output directory. Expected dist, build, or out."
             exit 1
           fi
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
@@ -121,5 +108,3 @@ jobs:
           echo "## Wolfie Preview Deployment" >> "$GITHUB_STEP_SUMMARY"
           echo "" >> "$GITHUB_STEP_SUMMARY"
           echo "Preview URL: ${{ steps.deployment.outputs.page_url }}" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "Expected URL: https://jetpepper.github.io/Wolfie/" >> "$GITHUB_STEP_SUMMARY"

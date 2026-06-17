@@ -390,6 +390,18 @@ From the repo root:
 python -m pytest tests/test_phase1_backend.py tests/test_phase2_mcp_lifecycle.py tests/test_phase3_strategy_core.py tests/test_phase4_scenarios_replay.py tests/test_phase5_insider_influence.py tests/test_frontend_contract.py -q
 ```
 
+## Public Preview
+
+GitHub Pages deployment is configured in `.github/workflows/deploy-preview.yml`.
+
+Expected preview URL after the workflow is pushed and GitHub Pages succeeds:
+
+```text
+https://jetpepper.github.io/Wolfie/
+```
+
+The preview is a static review build of the Wolfie UI. It does not add Robinhood login, broker credentials, real account data, live order submission, paid services, or real market-data ingestion.
+
 The backend tests prove:
 
 - `/health` returns `ok`.
