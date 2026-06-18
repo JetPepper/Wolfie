@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type ViewId = "thought" | "signals" | "portfolio" | "risk" | "history";
+type ViewId = "overview" | "bots" | "signals" | "activity" | "settings";
 type Mode = "Simulated" | "Live";
 type BotId = "alpha" | "shield" | "compass" | "surge";
 type ThoughtState = "Invested" | "Considering" | "Avoiding" | "Neutral";
@@ -293,15 +293,46 @@ function formatCapitalInput(value: string | number) {
   return parsed.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 }
 
+function playIntroSound() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const context = new AudioContextClass();
+    const now = context.currentTime;
+    const master = context.createGain();
+    master.gain.setValueAtTime(0.0001, now);
+    master.gain.exponentialRampToValueAtTime(0.18, now + 0.04);
+    master.gain.exponentialRampToValueAtTime(0.0001, now + 1.05);
+    master.connect(context.destination);
+
+    [130.81, 196, 329.63, 493.88].forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      oscillator.type = index % 2 ? "triangle" : "sine";
+      oscillator.frequency.setValueAtTime(frequency, now + index * 0.035);
+      oscillator.frequency.exponentialRampToValueAtTime(frequency * 1.62, now + 0.62 + index * 0.02);
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.12 / (index + 1), now + 0.09 + index * 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.86);
+      oscillator.connect(gain).connect(master);
+      oscillator.start(now + index * 0.035);
+      oscillator.stop(now + 1.08);
+    });
+  } catch {
+    // Audio is enhancement-only and may be blocked by browser settings.
+  }
+}
+
 export default function Home() {
   const [capital, setCapital] = useState(250000);
   const [draftCapital, setDraftCapital] = useState("$250,000");
   const [ready, setReady] = useState(false);
-  const [view, setView] = useState<ViewId>("thought");
+  const [view, setView] = useState<ViewId>("overview");
   const [selectedNodeId, setSelectedNodeId] = useState("nvda");
   const [selectedBotId, setSelectedBotId] = useState<BotId>("alpha");
   const [mode, setMode] = useState<Mode>("Simulated");
-  const [panel, setPanel] = useState<"node" | "bot" | "activity" | "live" | null>(null);
+  const [panel, setPanel] = useState<"node" | "bot" | "activity" | "live" | "card" | null>(null);
+  const [cardId, setCardId] = useState("balance");
   const [orbit, setOrbit] = useState(true);
   const [tickerFilter, setTickerFilter] = useState("All");
 
@@ -318,7 +349,7 @@ export default function Home() {
       }
     }
     if (storedReady === "true") setReady(true);
-    if (storedView && ["thought", "signals", "portfolio", "risk", "history"].includes(storedView)) setView(storedView);
+    if (storedView && ["overview", "bots", "signals", "activity", "settings"].includes(storedView)) setView(storedView);
     if (storedMode === "Simulated") setMode(storedMode);
   }, []);
 
@@ -344,6 +375,7 @@ export default function Home() {
     setCapital(next);
     setDraftCapital(formatCapitalInput(next));
     setReady(true);
+    playIntroSound();
     window.localStorage.setItem("wolfie.capital", String(next));
     window.localStorage.setItem("wolfie.ready", "true");
   }
@@ -360,6 +392,11 @@ export default function Home() {
   function selectNode(id: string) {
     setSelectedNodeId(id);
     setPanel("node");
+  }
+
+  function openCard(id: string) {
+    setCardId(id);
+    setPanel("card");
   }
 
   const invalidCapital = parseCapital(draftCapital) <= 0;
@@ -383,55 +420,43 @@ export default function Home() {
         </section>
       )}
 
-      <header className="top-command">
-        <button className="brand-mark" onClick={() => setView("thought")} aria-label="Wolfie overview">
+      <aside className="app-sidebar metal-panel">
+        <button className="brand-mark" onClick={() => setView("overview")} aria-label="Wolfie overview">
           <img src={assetPath("wolfie-logo.svg")} alt="Wolfie" />
-          <span>WOLFIE</span>
+          <span><b>WOLFIE</b><small>Agentic Trading</small></span>
         </button>
-        <nav className="view-tabs" aria-label="Main views">
+        <nav className="side-nav-list" aria-label="Main views">
           {([
-            ["thought", "BOT THOUGHT"],
-            ["signals", "SIGNALS"],
-            ["portfolio", "PORTFOLIO"],
-            ["risk", "RISK"],
-            ["history", "HISTORY"]
+            ["overview", "Overview"],
+            ["bots", "Trading Bots"],
+            ["signals", "Signal Intelligence"],
+            ["activity", "Activity"],
+            ["settings", "Settings"]
           ] as [ViewId, string][]).map(([id, label]) => (
             <button key={id} className={view === id ? "active" : ""} onClick={() => setView(id)}>{label}</button>
           ))}
         </nav>
-        <div className="mode-switch" aria-label="Trading Mode">
-          <button className={mode === "Simulated" ? "active" : ""} onClick={() => requestMode("Simulated")}>SIMULATED</button>
-          <button onClick={() => requestMode("Live")}>LIVE</button>
+        <div className="sidebar-spacer" />
+        <div className="trading-mode-card">
+          <p className="micro-label">Trading Mode</p>
+          <div className="mode-switch" aria-label="Trading Mode">
+            <button className={mode === "Simulated" ? "active" : ""} onClick={() => requestMode("Simulated")}>Simulated</button>
+            <button onClick={() => requestMode("Live")}>Live</button>
+          </div>
         </div>
-        <button className="gear-button" onClick={() => setView("risk")} aria-label="Settings">⚙</button>
-      </header>
-
-      <aside className="left-rail metal-panel">
-        <p className="micro-label">Bot Overview</p>
-        <h2>{selectedBot.name}</h2>
-        <p className="subtle">{selectedBot.role}</p>
-        <MetricSpark label="Confidence" value={`${selectedBot.confidence}%`} />
-        <div className="side-stat"><span>Focus</span><strong>{selectedBot.focus.length + 8}</strong><small>Active Thoughts</small></div>
-        <div className="side-stat"><span>Capital</span><strong>{money(capital)}</strong><small>{mode}</small></div>
-        <div className="side-stat"><span>Buying Power</span><strong>{money(buyingPower)}</strong></div>
-        <div className="side-stat positive"><span>Net P/L</span><strong>+{money(netPnl)}</strong><small>7.49%</small></div>
-        <div className="thought-states">
-          <p className="micro-label">Thought States</p>
-          {Object.entries(thoughtCounts).map(([state, count]) => <button key={state} onClick={() => setTickerFilter(state)}><i className={`dot ${state.toLowerCase()}`} />{state}<b>{count}</b></button>)}
+        <div className="selected-bot-mini">
+          <BotCharacter bot={selectedBot} />
+          <span><b>{selectedBot.name}</b><small>{selectedBot.role}</small></span>
         </div>
-        <div className="layer-list">
-          <p className="micro-label">View Layers</p>
-          {["Thoughts", "Pros / Cons", "Signals", "News", "Flows", "Risk", "Connections"].map((item, index) => <button key={item} className={index === 0 ? "active" : ""}>{item}</button>)}
-        </div>
-        <button className="save-view">Save View</button>
       </aside>
 
-      <section className="stage">
-        {view === "thought" && <ThoughtField selectedId={selectedNodeId} onSelect={selectNode} selectedBot={selectedBot} />}
+      <section className="stage dashboard-stage">
+        <DashboardHeader view={view} selectedBot={selectedBot} setView={setView} />
+        {view === "overview" && <OverviewDashboard capital={capital} buyingPower={buyingPower} netPnl={netPnl} selectedBot={selectedBot} selectedNode={selectedNode} openCard={openCard} setView={setView} selectNode={selectNode} />}
+        {view === "bots" && <BotsDashboard selectedBot={selectedBot} selectedBotId={selectedBotId} setSelectedBotId={setSelectedBotId} setPanel={setPanel} />}
         {view === "signals" && <SignalsView onSelect={selectNode} />}
-        {view === "portfolio" && <PortfolioView capital={capital} buyingPower={buyingPower} netPnl={netPnl} />}
-        {view === "risk" && <RiskView draftCapital={draftCapital} setDraftCapital={setDraftCapital} invalidCapital={invalidCapital} saveCapital={saveCapital} mode={mode} requestMode={requestMode} selectedBot={selectedBot} setSelectedBotId={setSelectedBotId} />}
-        {view === "history" && <HistoryView />}
+        {view === "activity" && <HistoryView />}
+        {view === "settings" && <RiskView draftCapital={draftCapital} setDraftCapital={setDraftCapital} invalidCapital={invalidCapital} saveCapital={saveCapital} mode={mode} requestMode={requestMode} selectedBot={selectedBot} setSelectedBotId={setSelectedBotId} />}
       </section>
 
       <aside className="right-rail">
@@ -445,7 +470,7 @@ export default function Home() {
           {[
             { label: "Orbit", action: () => setOrbit(!orbit), active: orbit },
             { label: "Focus", action: () => setPanel("node"), active: false },
-            { label: "Zoom", action: () => setView("thought"), active: false },
+            { label: "Zoom", action: () => setView("signals"), active: false },
             { label: "Pan", action: () => setView("signals"), active: false },
             { label: "Filter", action: () => setTickerFilter(tickerFilter === "All" ? "Invested" : "All"), active: tickerFilter !== "All" },
             { label: "Pause", action: () => setOrbit(!orbit), active: !orbit }
@@ -464,6 +489,7 @@ export default function Home() {
             {panel === "bot" && <BotDrawer bot={selectedBot} />}
             {panel === "activity" && <ActivityDrawer />}
             {panel === "live" && <LiveDrawer />}
+            {panel === "card" && <CardDrawer cardId={cardId} capital={capital} buyingPower={buyingPower} netPnl={netPnl} selectedNode={selectedNode} selectedBot={selectedBot} />}
           </section>
         </div>
       )}
@@ -479,6 +505,96 @@ function MetricSpark({ label, value }: { label: string; value: string }) {
       <svg viewBox="0 0 160 50" aria-hidden="true">
         <polyline points="0,42 12,39 24,41 36,35 48,36 60,31 72,34 84,26 96,32 108,18 120,29 132,20 144,24 160,10" />
       </svg>
+    </div>
+  );
+}
+
+function BotCharacter({ bot }: { bot: Bot }) {
+  return (
+    <span className={`bot-character bot-${bot.id}`} aria-hidden="true">
+      <img src={bot.avatar} alt="" />
+      <i className="bot-eye left" />
+      <i className="bot-eye right" />
+      <i className="bot-antenna" />
+    </span>
+  );
+}
+
+function DashboardHeader({ view, selectedBot, setView }: { view: ViewId; selectedBot: Bot; setView: (view: ViewId) => void }) {
+  const titles: Record<ViewId, { title: string; copy: string }> = {
+    overview: { title: "Wolfie Command Dashboard", copy: "Capital, bots, market thoughts, and execution readiness in one operating view." },
+    bots: { title: "Trading Bots", copy: "Each bot is a character with a different risk personality, signal lens, and capital behavior." },
+    signals: { title: "Signal Intelligence", copy: "A live-style processing room for market inputs, bot thoughts, risk, catalysts, and opportunity clusters." },
+    activity: { title: "Activity", copy: "Recent thought changes, bot actions, and status transitions." },
+    settings: { title: "Settings", copy: "Capital, mode, bot lens, and operating guardrails." }
+  };
+  return (
+    <header className="dashboard-header">
+      <div>
+        <p className="micro-label">{view === "overview" ? "Overview" : view}</p>
+        <h1>{titles[view].title}</h1>
+        <p>{titles[view].copy}</p>
+      </div>
+      <div className="header-bot-card metal-panel">
+        <BotCharacter bot={selectedBot} />
+        <span><b>Active bot: {selectedBot.name}</b><small>{selectedBot.mood}</small></span>
+        <button onClick={() => setView("settings")}>Settings</button>
+      </div>
+    </header>
+  );
+}
+
+function OverviewDashboard({ capital, buyingPower, netPnl, selectedBot, selectedNode, openCard, setView, selectNode }: { capital: number; buyingPower: number; netPnl: number; selectedBot: Bot; selectedNode: ThoughtNode; openCard: (id: string) => void; setView: (view: ViewId) => void; selectNode: (id: string) => void }) {
+  const allocated = Math.round(capital * 0.4);
+  const cards = [
+    { id: "balance", label: "Trading Balance", value: money(capital), detail: "Starting capital and equity baseline.", tone: "" },
+    { id: "buying-power", label: "Buying Power", value: money(buyingPower), detail: "Capital Wolfie can still deploy.", tone: "" },
+    { id: "allocated", label: "Allocated to Bots", value: money(allocated), detail: "Assigned across active bot characters.", tone: "" },
+    { id: "pnl", label: "Net P/L", value: `+${money(netPnl)}`, detail: "Current session performance.", tone: "positive" },
+    { id: "thoughts", label: "Active Thoughts", value: String(thoughtNodes.length), detail: "Invested, watching, avoiding, and neutral.", tone: "" },
+    { id: "confidence", label: "Top Confidence", value: `${selectedNode.confidence}%`, detail: `${selectedNode.label} ${selectedNode.subtitle}`, tone: "positive" }
+  ];
+  return (
+    <div className="overview-grid">
+      <section className="metric-board metal-panel">
+        <div className="section-head"><p className="micro-label">At A Glance</p><button onClick={() => setView("activity")}>View activity</button></div>
+        <div className="dashboard-card-grid">
+          {cards.map((card) => <button key={card.id} className={`dashboard-card ${card.tone}`} onClick={() => openCard(card.id)}><span>{card.label}</span><b>{card.value}</b><small>{card.detail}</small></button>)}
+        </div>
+      </section>
+      <section className="next-opportunity metal-panel">
+        <div className="section-head"><p className="micro-label">Next Opportunity</p><button onClick={() => selectNode(selectedNode.id)}>Open thought</button></div>
+        <div className="opportunity-body">
+          <StockIdentity node={selectedNode} />
+          <div className="confidence-badge"><span>Confidence</span><b>{selectedNode.confidence}</b><small>/100</small></div>
+          <h2>{selectedNode.label} {selectedNode.subtitle}</h2>
+          <p>{selectedNode.thesis}</p>
+          <div className="opportunity-actions"><button onClick={() => selectNode(selectedNode.id)}>Review Opportunity</button><button onClick={() => setView("signals")}>Signal Intelligence</button></div>
+        </div>
+      </section>
+      <section className="thought-preview metal-panel">
+        <div className="section-head"><p className="micro-label">Bot Thought Preview</p><button onClick={() => setView("signals")}>Expand 3D</button></div>
+        <ThoughtField selectedId={selectedNode.id} onSelect={selectNode} selectedBot={selectedBot} />
+      </section>
+      <section className="activity-panel metal-panel">
+        <div className="section-head"><p className="micro-label">Recent Activity</p><button onClick={() => setView("activity")}>View all</button></div>
+        <div className="activity-list compact">{activities.map((item) => {
+          const node = thoughtNodes.find((thought) => thought.label === item.ticker);
+          return <button key={item.id} onClick={() => node && selectNode(node.id)}><b>{item.time}</b>{node ? <StockInline node={node} /> : <strong>{item.ticker}</strong>}<span>{item.event}</span><p>{item.summary}</p></button>;
+        })}</div>
+      </section>
+    </div>
+  );
+}
+
+function BotsDashboard({ selectedBot, selectedBotId, setSelectedBotId, setPanel }: { selectedBot: Bot; selectedBotId: BotId; setSelectedBotId: (id: BotId) => void; setPanel: (panel: "bot") => void }) {
+  return (
+    <div className="bots-dashboard">
+      {bots.map((bot) => <button key={bot.id} className={`bot-profile-card metal-panel ${selectedBotId === bot.id ? "active" : ""}`} onClick={() => { setSelectedBotId(bot.id); setPanel("bot"); }}><BotCharacter bot={bot} /><span className="micro-label">{bot.role}</span><h2>{bot.name}</h2><p>{bot.mood}</p><div className="bot-focus">{bot.focus.map((ticker) => {
+        const node = thoughtNodes.find((thought) => thought.label === ticker);
+        return node ? <StockInline key={ticker} node={node} /> : <span key={ticker}>{ticker}</span>;
+      })}</div><strong>{bot.confidence}% confidence</strong></button>)}
+      <section className="metal-panel bot-deep-panel"><p className="micro-label">Selected Character</p><BotCharacter bot={selectedBot} /><h2>{selectedBot.name}</h2><p>{selectedBot.mood}</p><ul>{selectedBot.focus.map((item) => <li key={item}>{item}</li>)}</ul></section>
     </div>
   );
 }
@@ -776,8 +892,61 @@ function NodeDrawer({ node }: { node: ThoughtNode }) {
   return <><p className="micro-label">Thought Detail</p><StockIdentity node={node} /><h2>{node.label} {node.subtitle}</h2><p>{node.thesis}</p><div className="education-copy">{node.plainLanguage?.map((item) => <p key={item}>{item}</p>)}</div><dl><dt>Confidence</dt><dd>{node.confidence}%</dd><dt>State</dt><dd>{node.state}</dd><dt>What Wolfie is processing</dt><dd>{node.signals?.join(", ")}</dd><dt>Factors</dt><dd>{node.factors.join(", ")}</dd></dl></>;
 }
 
+function CardDrawer({ cardId, capital, buyingPower, netPnl, selectedNode, selectedBot }: { cardId: string; capital: number; buyingPower: number; netPnl: number; selectedNode: ThoughtNode; selectedBot: Bot }) {
+  const allocated = Math.round(capital * 0.4);
+  const details: Record<string, { title: string; lede: string; rows: [string, string][]; notes: string[] }> = {
+    balance: {
+      title: "Trading Balance",
+      lede: "This is the capital baseline Wolfie uses for sizing, risk checks, and dashboard calculations.",
+      rows: [["Current balance", money(capital)], ["Selected bot", selectedBot.name], ["Mode", "Simulated"]],
+      notes: ["Changing capital updates buying power and bot allocation context.", "This app does not connect to real brokerage funds."]
+    },
+    "buying-power": {
+      title: "Buying Power",
+      lede: "Buying power is the portion of capital available for new paper-trade ideas after current allocation.",
+      rows: [["Buying power", money(buyingPower)], ["Reserved capital", money(Math.max(0, capital - buyingPower))], ["Active bot", selectedBot.name]],
+      notes: ["Wolfie should prefer ideas that leave room for risk controls.", "Large ideas should explain why they deserve more capital."]
+    },
+    allocated: {
+      title: "Allocated to Bots",
+      lede: "Capital is distributed across bot characters so each one can process a different style of opportunity.",
+      rows: [["Allocated", money(allocated)], ["Bot count", String(bots.length)], ["Largest allocation", money(Math.max(...bots.map((bot) => bot.capital)))]],
+      notes: bots.map((bot) => `${bot.name}: ${money(bot.capital)} focused on ${bot.focus.join(", ")}.`)
+    },
+    pnl: {
+      title: "Net P/L",
+      lede: "This summarizes the current paper-performance read for the session.",
+      rows: [["Net P/L", `+${money(netPnl)}`], ["Return", `${((netPnl / Math.max(1, capital)) * 100).toFixed(2)}%`], ["Status", "Paper calculation"]],
+      notes: ["Positive P/L should not increase risk automatically.", "Wolfie still needs source, signal, and risk evidence before proposing action."]
+    },
+    thoughts: {
+      title: "Active Thoughts",
+      lede: "Thoughts are market ideas Wolfie is actively monitoring, avoiding, or using as portfolio context.",
+      rows: [["Thought count", String(thoughtNodes.length)], ["Invested", String(thoughtNodes.filter((node) => node.state === "Invested").length)], ["Avoiding", String(thoughtNodes.filter((node) => node.state === "Avoiding").length)]],
+      notes: thoughtNodes.slice(0, 5).map((node) => `${node.label}: ${node.subtitle} with ${node.confidence}% confidence.`)
+    },
+    confidence: {
+      title: "Top Confidence",
+      lede: "The strongest current thought gets elevated, but high confidence still needs risk review.",
+      rows: [["Ticker", selectedNode.label], ["Company", selectedNode.company || "UNKNOWN"], ["Confidence", `${selectedNode.confidence}%`]],
+      notes: selectedNode.plainLanguage || [selectedNode.thesis]
+    }
+  };
+  const detail = details[cardId] || details.balance;
+  return (
+    <>
+      <p className="micro-label">Dashboard Card</p>
+      <h2>{detail.title}</h2>
+      <p>{detail.lede}</p>
+      {cardId === "confidence" && <StockIdentity node={selectedNode} />}
+      <dl>{detail.rows.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+      <div className="education-copy">{detail.notes.map((note) => <p key={note}>{note}</p>)}</div>
+    </>
+  );
+}
+
 function BotDrawer({ bot }: { bot: Bot }) {
-  return <><img className="drawer-avatar" src={bot.avatar} alt={bot.name} /><p className="micro-label">Bot Character</p><h2>{bot.name}</h2><p>{bot.mood}</p><dl><dt>Capital</dt><dd>{money(bot.capital)}</dd><dt>Focus</dt><dd>{bot.focus.join(", ")}</dd></dl></>;
+  return <><BotCharacter bot={bot} /><p className="micro-label">Bot Character</p><h2>{bot.name}</h2><p>{bot.mood}</p><dl><dt>Capital</dt><dd>{money(bot.capital)}</dd><dt>Focus</dt><dd>{bot.focus.join(", ")}</dd><dt>Confidence</dt><dd>{bot.confidence}%</dd></dl><div className="education-copy"><p>{bot.name} is tuned for {bot.role.toLowerCase()} and reviews {bot.focus.join(", ")} before it proposes an action.</p><p>Use this character view to understand why a bot is cautious, aggressive, defensive, or balanced before trusting its next proposal.</p></div></>;
 }
 
 function ActivityDrawer() {

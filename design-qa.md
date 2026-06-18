@@ -1,24 +1,24 @@
 # Wolfie Design QA
 
-final result: passed
+Final result: passed
 
 Reference: `/Users/brycereed/Desktop/3d reference.png`
 
 Prototype captures:
-- `artifacts/metallic-bot-thought-desktop.png`
-- `artifacts/metallic-mobile.png`
-- `artifacts/metallic-live-lock.png`
+- `artifacts/dashboard-desktop.png`
+- `artifacts/dashboard-mobile.png`
+- `artifacts/dashboard-live-lock.png`
 
 Checks completed:
-- Desktop Bot Thought view follows the supplied 3D cockpit composition: top command nav, left metrics rail, central thought field, right selected-thought inspector, field navigator, bottom timeline, and control dock.
-- Typography and logo treatment were adjusted toward the condensed, spaced, technical look in the reference.
-- Metallic panels, glow states, and button-like ticker chips are present.
-- Thought nodes are interactive and open detail drawers.
-- Top navigation switches between Bot Thought, Signals, Portfolio, Risk, and History.
-- Live mode opens a locked panel and does not enable live trading.
-- Mobile viewport scales into a single-column cockpit without clipped top navigation.
+- Overview is a real dashboard with left-side navigation categories: Overview, Trading Bots, Signal Intelligence, Activity, and Settings.
+- Dashboard cards behave as controls and open context-specific detail drawers.
+- Trading Bot cards open bot detail context and use animated character wrappers around the avatar assets.
+- Signal Intelligence keeps the interactive Three.js/WebGL thought field with orbit controls, raycast node selection, moving thought bodies, and emerging/dying particles.
+- Stock references include ticker identity and company logo where a logo source exists in the local fixture.
+- Mobile viewport no longer clips card text into vertical columns.
+- Live mode remains locked and does not enable live trading.
 - Browser visual tests passed: `2 passed`.
-- Bot Thought now includes a Three.js/WebGL 3D solar-system scene with orbit controls, raycast node selection, animated emerging/dying thought particles, and moving thought bodies around Wolfie.
 
-Known limitation:
-- Bot avatars are animated character marks using the current local SVG asset set; they are not yet bespoke rendered robot character illustrations.
+Known limitations:
+- The intro audio is a local synthesized Web Audio cue. It does not copy or embed audio from the referenced YouTube short.
+- Bot avatars use the current local SVG asset set with animated character treatment. Fully bespoke rendered robot characters remain future art direction work.
