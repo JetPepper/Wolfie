@@ -37,6 +37,17 @@ type Bot = {
   focus: string[];
 };
 
+type DisclosureRobot = {
+  id: string;
+  name: string;
+  personality: string;
+  tradingStyle: string;
+  assignedPolitician: string;
+  verifiedReturn: string;
+  sourceStatus: "UNKNOWN";
+  avatar: string;
+};
+
 type Activity = {
   id: string;
   time: string;
@@ -98,6 +109,49 @@ const bots: Bot[] = [
     confidence: 59,
     status: "Avoiding",
     focus: ["COIN", "GME", "TSLA"]
+  }
+];
+
+const disclosureRobots: DisclosureRobot[] = [
+  {
+    id: "form-scout",
+    name: "Form Scout",
+    personality: "Quiet auditor",
+    tradingStyle: "Waits for verified filings before acting.",
+    assignedPolitician: "UNKNOWN",
+    verifiedReturn: "UNKNOWN",
+    sourceStatus: "UNKNOWN",
+    avatar: assetPath("wolfie-politician-public-disclosure.svg")
+  },
+  {
+    id: "committee-lens",
+    name: "Committee Lens",
+    personality: "Pattern skeptic",
+    tradingStyle: "Looks for timing clusters only after source validation.",
+    assignedPolitician: "UNKNOWN",
+    verifiedReturn: "UNKNOWN",
+    sourceStatus: "UNKNOWN",
+    avatar: assetPath("wolfie-politician-public-disclosure.svg")
+  },
+  {
+    id: "late-file-sentinel",
+    name: "Late-File Sentinel",
+    personality: "Compliance hawk",
+    tradingStyle: "Flags disclosure lag before ranking performance.",
+    assignedPolitician: "UNKNOWN",
+    verifiedReturn: "UNKNOWN",
+    sourceStatus: "UNKNOWN",
+    avatar: assetPath("wolfie-politician-public-disclosure.svg")
+  },
+  {
+    id: "return-oracle",
+    name: "Return Oracle",
+    personality: "Cold calculator",
+    tradingStyle: "Ranks only audited, normalized, source-backed returns.",
+    assignedPolitician: "UNKNOWN",
+    verifiedReturn: "UNKNOWN",
+    sourceStatus: "UNKNOWN",
+    avatar: assetPath("wolfie-politician-public-disclosure.svg")
   }
 ];
 
@@ -464,20 +518,22 @@ export default function Home() {
         <FieldNavigator selectedId={selectedNodeId} onSelect={selectNode} />
       </aside>
 
-      <footer className="bottom-console">
-        <Timeline />
-        <div className="control-dock metal-panel">
-          {[
-            { label: "Orbit", action: () => setOrbit(!orbit), active: orbit },
-            { label: "Focus", action: () => setPanel("node"), active: false },
-            { label: "Zoom", action: () => setView("signals"), active: false },
-            { label: "Pan", action: () => setView("signals"), active: false },
-            { label: "Filter", action: () => setTickerFilter(tickerFilter === "All" ? "Invested" : "All"), active: tickerFilter !== "All" },
-            { label: "Pause", action: () => setOrbit(!orbit), active: !orbit }
-          ].map((control) => <button key={control.label} className={control.active ? "active" : ""} onClick={control.action}><span>{control.label}</span></button>)}
-        </div>
-        <div className="time-scrub metal-panel"><span>Time Scrub</span><input aria-label="Time scrub" type="range" min="0" max="100" defaultValue="72" /><b>12:42:37</b><b>1.0x</b></div>
-      </footer>
+      {view === "signals" && (
+        <footer className="bottom-console">
+          <Timeline />
+          <div className="control-dock metal-panel">
+            {[
+              { label: "Orbit", action: () => setOrbit(!orbit), active: orbit },
+              { label: "Focus", action: () => setPanel("node"), active: false },
+              { label: "Zoom", action: () => setView("signals"), active: false },
+              { label: "Pan", action: () => setView("signals"), active: false },
+              { label: "Filter", action: () => setTickerFilter(tickerFilter === "All" ? "Invested" : "All"), active: tickerFilter !== "All" },
+              { label: "Pause", action: () => setOrbit(!orbit), active: !orbit }
+            ].map((control) => <button key={control.label} className={control.active ? "active" : ""} onClick={control.action}><span>{control.label}</span></button>)}
+          </div>
+          <div className="time-scrub metal-panel"><span>Time Scrub</span><input aria-label="Time scrub" type="range" min="0" max="100" defaultValue="72" /><b>12:42:37</b><b>1.0x</b></div>
+        </footer>
+      )}
 
       <StatusTicker filter={tickerFilter} />
 
@@ -509,9 +565,9 @@ function MetricSpark({ label, value }: { label: string; value: string }) {
   );
 }
 
-function BotCharacter({ bot }: { bot: Bot }) {
+function BotCharacter({ bot, small = false }: { bot: Pick<Bot, "id" | "avatar" | "name"> | { id: string; avatar: string; name: string }; small?: boolean }) {
   return (
-    <span className={`bot-character bot-${bot.id}`} aria-hidden="true">
+    <span className={`bot-character bot-${bot.id} ${small ? "small" : ""}`} aria-hidden="true">
       <img src={bot.avatar} alt="" />
       <i className="bot-eye left" />
       <i className="bot-eye right" />
@@ -590,11 +646,31 @@ function OverviewDashboard({ capital, buyingPower, netPnl, selectedBot, selected
 function BotsDashboard({ selectedBot, selectedBotId, setSelectedBotId, setPanel }: { selectedBot: Bot; selectedBotId: BotId; setSelectedBotId: (id: BotId) => void; setPanel: (panel: "bot") => void }) {
   return (
     <div className="bots-dashboard">
-      {bots.map((bot) => <button key={bot.id} className={`bot-profile-card metal-panel ${selectedBotId === bot.id ? "active" : ""}`} onClick={() => { setSelectedBotId(bot.id); setPanel("bot"); }}><BotCharacter bot={bot} /><span className="micro-label">{bot.role}</span><h2>{bot.name}</h2><p>{bot.mood}</p><div className="bot-focus">{bot.focus.map((ticker) => {
-        const node = thoughtNodes.find((thought) => thought.label === ticker);
-        return node ? <StockInline key={ticker} node={node} /> : <span key={ticker}>{ticker}</span>;
-      })}</div><strong>{bot.confidence}% confidence</strong></button>)}
+      <section className="bots-hero metal-panel">
+        <p className="micro-label">Autonomous Characters</p>
+        <h2>Robots with distinct taste, risk posture, and market manners.</h2>
+        <p>Hover a character and it reacts defensively. Each bot has its own trading style, capital behavior, and signal lens.</p>
+      </section>
+      <div className="primary-bot-grid">
+        {bots.map((bot) => <button key={bot.id} className={`bot-profile-card metal-panel ${selectedBotId === bot.id ? "active" : ""}`} onClick={() => { setSelectedBotId(bot.id); setPanel("bot"); }}><BotCharacter bot={bot} /><span className="micro-label">{bot.role}</span><h2>{bot.name}</h2><p>{bot.mood}</p><div className="bot-focus">{bot.focus.map((ticker) => {
+          const node = thoughtNodes.find((thought) => thought.label === ticker);
+          return node ? <StockInline key={ticker} node={node} /> : <span key={ticker}>{ticker}</span>;
+        })}</div><strong>{bot.confidence}% confidence</strong></button>)}
+      </div>
       <section className="metal-panel bot-deep-panel"><p className="micro-label">Selected Character</p><BotCharacter bot={selectedBot} /><h2>{selectedBot.name}</h2><p>{selectedBot.mood}</p><ul>{selectedBot.focus.map((item) => <li key={item}>{item}</li>)}</ul></section>
+      <section className="politician-bot-panel metal-panel">
+        <div className="section-head">
+          <div>
+            <p className="micro-label">Public Disclosure Micro Bots</p>
+            <h2>Politician-return bots stay locked until verified rankings exist.</h2>
+          </div>
+          <span className="unknown-pill">Returns UNKNOWN</span>
+        </div>
+        <p className="disclosure-note">Congressional trading rankings are not populated from SEC Forms 3, 4, and 5. Wolfie will not name top-return politicians until a verified STOCK Act disclosure fixture and return methodology are loaded.</p>
+        <div className="micro-bot-grid">
+          {disclosureRobots.map((robot) => <button key={robot.id} className="micro-bot-card"><BotCharacter bot={robot} small /><b>{robot.name}</b><span>{robot.personality}</span><small>{robot.tradingStyle}</small><i>Politician: {robot.assignedPolitician}</i><em>Return: {robot.verifiedReturn}</em></button>)}
+        </div>
+      </section>
     </div>
   );
 }

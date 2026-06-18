@@ -47,6 +47,10 @@ test("Wolfie metallic cockpit renders and core controls work", async ({ page }) 
 
   await mainNav.getByRole("button", { name: "Trading Bots", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Trading Bots" })).toBeVisible();
+  await expect(page.getByText("Public Disclosure Micro Bots")).toBeVisible();
+  await expect(page.getByText("Returns UNKNOWN")).toBeVisible();
+  await expect(page.getByRole("button", { name: /Form Scout/ })).toBeVisible();
+  await page.screenshot({ path: "artifacts/bots-refined.png", fullPage: true });
   await page.getByRole("button", { name: /Wolfie Compass/ }).first().click();
   await expect(page.locator(".detail-drawer").getByRole("heading", { name: "Wolfie Compass" })).toBeVisible();
   await page.getByRole("button", { name: "Close" }).click();
