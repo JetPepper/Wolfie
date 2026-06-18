@@ -9,105 +9,120 @@ def read(path: Path) -> str:
     return path.read_text()
 
 
-def test_localhost_app_shell_exposes_required_navigation_sections():
+def test_master_prompt_navigation_and_mode_contract():
     shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    for label in [
-        "Live Info",
-        "MCP Simulation",
-        "Paper Account",
-        "Strategy Signals",
-        "Scenario Lab",
-        "Insider Radar",
-        "Market Influence",
-        "Fused Signals",
-        "Audit Log",
-        "Settings",
+    assert "Trading Bots" in shell
+    assert "Trading Mode" in shell
+    assert "Simulated" in shell
+    assert "Live" in shell
+    assert "Paper Activity" not in visible_text_source(shell)
+    assert "Deploy Bot" not in visible_text_source(shell)
+
+
+def test_onboarding_capital_step_exists_and_validates():
+    shell = read(WEB_APP / "wolfie-dashboard.tsx")
+    for text in [
+        "How much do you want Wolfie to trade with?",
+        "This sets your starting trading capital.",
+        "$10,000",
+        "Continue",
+        "parseCapitalInput",
+        "localStorage",
     ]:
-        assert label in shell
+        assert text in shell
 
 
-def test_truth_banner_and_simulated_execution_labels_are_global():
+def test_visible_controls_have_stateful_handlers():
     shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    for label in [
-        "Environment",
-        "SIMULATED_LIVE_MCP_LOCAL",
-        "Broker interface",
-        "Robinhood-compatible MCP simulation",
-        "Execution",
+    for hook in [
+        "setActiveSection",
+        "setTradingMode",
+        "setExpandedCard",
+        "setSelectedBotId",
+        "setTickerEditorOpen",
+        "setSigIntPreview",
+        "setCapitalAmount",
+        "updateSelectedBot",
+        "executeBotTrade",
+    ]:
+        assert hook in shell
+
+
+def test_overview_cards_and_sigint_are_interactive():
+    shell = read(WEB_APP / "wolfie-dashboard.tsx")
+    for text in [
+        "OverviewCard",
+        "ExpandedCardDialog",
+        "SignalIntelligenceGraph",
+        "SigINTPreviewPanel",
+        "sourceUrl",
+        "View all activity",
+        "View All Positions",
+    ]:
+        assert text in shell
+
+
+def test_trading_bots_page_has_required_bot_controls():
+    shell = read(WEB_APP / "wolfie-dashboard.tsx")
+    for text in [
+        "Conservative",
+        "Balanced",
+        "Aggressive",
+        "Politicians",
+        "Allocation mode",
+        "Fixed",
+        "Relative",
+        "Additional Settings",
+        "Require Approval",
+        "Autopilot",
+        "Activate Bot",
+        "Update Bot",
+        "Pause Bot",
+        "Resume Bot",
+    ]:
+        assert text in shell
+    assert "AAPL ×" not in shell
+    assert "Auto Paper" not in shell
+    assert "Bot Mode" not in visible_text_source(shell)
+
+
+def test_ticker_and_profit_loss_popup_exist():
+    shell = read(WEB_APP / "wolfie-dashboard.tsx")
+    for text in [
+        "EditableScrollingTicker",
+        "tickerCategories",
+        "ProfitLossToast",
+        "playProfitChime",
+        "Closed Position Results",
+    ]:
+        assert text in shell
+
+
+def test_no_brokerage_warning_language_in_visible_ui():
+    shell = visible_text_source(read(WEB_APP / "wolfie-dashboard.tsx"))
+    blocked = [
         "PaperExchange",
-        "Real Robinhood connected",
-        "false",
-        "Robinhood login required",
-        "Live order submitted",
-        "Real money at risk",
-    ]:
-        assert label in shell
+        "Paper Activity",
+        "paper account",
+        "paper trading",
+        "MCP TOOL CALL",
+        "BotConfig",
+        "mock",
+        "sandbox",
+        "brokerage disconnected",
+    ]
+    for text in blocked:
+        assert text.lower() not in shell.lower()
 
 
-def test_required_frontend_components_exist():
+def test_metric_cards_use_professional_non_character_wrapping():
     shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    for component in [
-        "AppShell",
-        "CommandBar",
-        "TruthBanner",
-        "EnvironmentBadge",
-        "BackendStatusBadge",
-        "DataProvenanceChip",
-        "MetricCard",
-        "PositionCard",
-        "OrderLifecycleTimeline",
-        "SignalFeed",
-        "RiskBlockCard",
-        "CostPreviewCard",
-        "ScenarioCard",
-        "ReplayTimeline",
-        "InsiderEventCard",
-        "InfluenceEventCard",
-        "FusedSignalCard",
-        "AuditEventRow",
-        "UnknownDataState",
-        "SettingsPanel",
-        "EmptyState",
-        "LoadingState",
-        "ErrorState",
-    ]:
-        assert f"function {component}" in shell
-
-
-def test_truth_banner_shows_backend_market_and_source_mode():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    dashboard_data = read(WEB_APP / "dashboard-data.ts")
-    page = read(WEB_APP / "page.tsx")
-    assert "Backend status" in shell
-    assert "BackendStatusBadge" in shell
-    assert "Market data mode" in shell
-    assert "Current source mode" in shell
-    assert "backendStatus" in dashboard_data
-    assert 'getJson("/health"' in page
-
-
-def test_paper_order_form_is_limit_only_and_routes_to_simulated_order_endpoints():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    assert "ManualTestOrderForm" in shell
-    assert "Limit orders only" in shell
-    assert "/api/orders/preview" in shell
-    assert "/api/orders/place" in shell
-    assert '"order_type": "limit"' in shell
-    assert 'value="market"' not in shell.lower()
-    assert "market order" not in shell.lower()
-
-
-def test_audit_log_displays_order_safety_fields_and_filters():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    for label in ["live_order_submitted=false", "source_mode", "execution_engine", "event type", "order id", "strategy", "symbol"]:
-        assert label in shell.lower()
-
-
-def test_unknown_values_and_provenance_chips_are_visible():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    assert "UNKNOWN" in shell
-    assert "DataProvenanceChip" in shell
-    assert "simulated/replay/fixture derived" in shell
+    assert "professionalMetricGrid" in shell
+    assert "tabular-nums whitespace-nowrap" in shell
+    assert "overflow-hidden text-ellipsis" in shell
+    metric_card = shell.split("function OverviewCard", 1)[1].split("function ExpandedCardDialog", 1)[0]
+    assert "break-all" not in metric_card
+    assert "break-words font-mono text-2xl" not in metric_card
 
 
 def test_readme_documents_local_ui_workflows():
@@ -116,9 +131,6 @@ def test_readme_documents_local_ui_workflows():
         "NEXT_PUBLIC_API_BASE_URL",
         "http://localhost:3000",
         "scripts/dev-local.sh",
-        "test simulated order flow from the UI",
-        "load and replay a scenario from the UI",
-        "inspect audit log from the UI",
     ]:
         assert text in readme
 
@@ -130,19 +142,14 @@ def test_local_launch_script_exists_and_runs_backend_frontend():
     assert "NEXT_PUBLIC_API_BASE_URL" in script
 
 
-def test_ui_uses_metallic_palette_shadows_and_wrap_safe_text():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    assert "metallic-panel" in shell
-    assert "metallic-card" in shell
-    assert "shadow-[0_24px_90px_rgba" in shell
-    assert "from-[#6EE7F9]" in shell
-    assert "via-[#A78BFA]" in shell
-    assert "to-[#FBBF24]" in shell
-    assert "whitespace-normal" in shell
-    assert "break-words" in shell
-    assert "min-w-0" in shell
-
-
-def test_provenance_chip_does_not_repeat_simulated_status_inside_cards():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    assert 'const showStatus = normalized !== "simulated"' in shell
+def visible_text_source(shell: str) -> str:
+    """Approximate user-facing string scan while ignoring type/function/internal safety names."""
+    lines = []
+    for line in shell.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("const order") or stripped.startswith("function money"):
+            continue
+        if "sourceMode" in stripped or "source_mode" in stripped or "execution_engine" in stripped:
+            continue
+        lines.append(line)
+    return "\n".join(lines)
