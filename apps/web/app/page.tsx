@@ -854,7 +854,7 @@ function RiskView(props: { draftCapital: string; setDraftCapital: (value: string
     <div className="view-grid">
       <section className="metal-panel settings-panel"><p className="micro-label">Capital</p><h1>Risk and operating controls</h1><input value={props.draftCapital} onChange={(event) => props.setDraftCapital(formatCapitalInput(event.target.value))} /><button className="primary-action" disabled={props.invalidCapital} onClick={props.saveCapital}>Save capital</button></section>
       <section className="metal-panel settings-panel"><p className="micro-label">Mode</p><div className="mode-switch inline"><button className={props.mode === "Simulated" ? "active" : ""} onClick={() => props.requestMode("Simulated")}>SIMULATED</button><button onClick={() => props.requestMode("Live")}>LIVE</button></div><p>Live remains locked until account connection and explicit approval are implemented.</p></section>
-      <section className="wide-panel metal-panel"><p className="micro-label">Bot Avatars</p><div className="bot-character-grid">{bots.map((bot) => <button key={bot.id} className={props.selectedBot.id === bot.id ? "active" : ""} onClick={() => props.setSelectedBotId(bot.id)}><img src={bot.avatar} alt={bot.name} /><b>{bot.name}</b><span>{bot.mood}</span></button>)}</div></section>
+      <section className="wide-panel metal-panel"><p className="micro-label">Bot Avatars</p><div className="bot-character-grid">{bots.map((bot) => <button key={bot.id} className={props.selectedBot.id === bot.id ? "active" : ""} onClick={() => props.setSelectedBotId(bot.id)}><BotCharacter bot={bot} /><b>{bot.name}</b><span>{bot.mood}</span></button>)}</div></section>
     </div>
   );
 }

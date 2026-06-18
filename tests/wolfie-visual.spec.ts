@@ -22,9 +22,12 @@ test("Wolfie metallic cockpit renders and core controls work", async ({ page }) 
   await expect(page.getByRole("heading", { name: "Wolfie Command Dashboard" })).toBeVisible();
   await expect(page.getByRole("button", { name: /Trading Balance/ })).toBeVisible();
 
-  await page.getByRole("button", { name: /Trading Balance/ }).click();
-  await expect(page.locator(".detail-drawer").getByRole("heading", { name: "Trading Balance" })).toBeVisible();
-  await page.getByRole("button", { name: "Close" }).click();
+  const cardGrid = page.locator(".dashboard-card-grid");
+  for (const cardName of ["Trading Balance", "Buying Power", "Allocated to Bots", "Net P/L", "Active Thoughts", "Top Confidence"]) {
+    await cardGrid.getByRole("button", { name: new RegExp(cardName) }).click();
+    await expect(page.locator(".detail-drawer").getByRole("heading", { name: cardName })).toBeVisible();
+    await page.getByRole("button", { name: "Close" }).click();
+  }
 
   await page.getByRole("button", { name: "Expand 3D" }).click();
   await expect(page.getByRole("heading", { name: "Signal field ranked by conviction" })).toBeVisible();
@@ -48,8 +51,15 @@ test("Wolfie metallic cockpit renders and core controls work", async ({ page }) 
   await expect(page.locator(".detail-drawer").getByRole("heading", { name: "Wolfie Compass" })).toBeVisible();
   await page.getByRole("button", { name: "Close" }).click();
 
+  await mainNav.getByRole("button", { name: "Activity", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Thought timeline and audit trail" })).toBeVisible();
+  await expect(page.getByText("Thought upgraded")).toBeVisible();
+
   await mainNav.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Risk and operating controls" })).toBeVisible();
+  await page.locator(".settings-panel input").first().fill("$125,000");
+  await page.getByRole("button", { name: "Save capital" }).click();
+  await expect(page.locator(".settings-panel input").first()).toHaveValue("$125,000");
   await page.getByRole("button", { name: "LIVE" }).first().click();
   await expect(page.getByRole("heading", { name: "Live trading is not enabled." })).toBeVisible();
   await page.screenshot({ path: "artifacts/dashboard-live-lock.png", fullPage: true });

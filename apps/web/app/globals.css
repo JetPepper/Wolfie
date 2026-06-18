@@ -101,7 +101,26 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
   color: #d7dfdf;
   text-shadow: 0 0 20px rgba(104,255,183,.2);
 }
-.brand-mark img { width: 38px; height: 38px; filter: drop-shadow(0 0 16px rgba(109,255,189,.36)); animation: avatarBreathe 4s ease-in-out infinite; }
+.brand-mark img,
+.onboarding-logo,
+.alpha-core img {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 25%, rgba(255,255,255,1) 0 20%, rgba(245,247,249,.98) 35%, rgba(201,209,219,.96) 64%, rgba(132,144,158,.98) 100%);
+  box-shadow:
+    inset -9px -12px 18px rgba(76, 86, 101, .36),
+    inset 8px 8px 18px rgba(255,255,255,.72),
+    0 0 0 1px rgba(255,255,255,.5),
+    0 0 34px rgba(239,246,255,.42),
+    0 0 70px rgba(110,231,249,.18);
+}
+.brand-mark img {
+  width: 42px;
+  height: 42px;
+  padding: 7px;
+  filter: drop-shadow(0 0 16px rgba(239,246,255,.32));
+  animation: avatarBreathe 4s ease-in-out infinite;
+}
 .brand-mark small {
   display: block;
   margin-top: 2px;
@@ -573,6 +592,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
   place-items: center;
   border-radius: 21px;
   background:
+    radial-gradient(circle at 50% 34%, rgba(255,255,255,.96), rgba(218,225,233,.9) 33%, rgba(120,132,148,.5) 58%, transparent 61%),
     radial-gradient(circle at 50% 22%, rgba(255,255,255,.2), transparent 34%),
     linear-gradient(145deg, rgba(112,200,255,.2), rgba(0,0,0,.44));
   border: 1px solid rgba(255,255,255,.17);
@@ -580,8 +600,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
   animation: avatarBreathe 4.2s ease-in-out infinite;
 }
 .bot-character img {
-  width: 86%;
-  height: 86%;
+  width: 78%;
+  height: 78%;
   object-fit: contain;
   filter: drop-shadow(0 0 14px rgba(110,231,249,.26));
 }
@@ -1007,13 +1027,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
   display: grid;
   justify-items: start;
 }
-.bot-character-grid img {
-  width: 74px;
-  height: 74px;
-  border-radius: 24px;
-  filter: drop-shadow(0 0 22px rgba(71,244,156,.28));
-  animation: avatarBreathe 4.5s ease-in-out infinite;
-}
+.bot-character-grid .bot-character { width: 76px; height: 76px; border-radius: 26px; }
 .bot-character-grid button,
 .bot-lens-list button {
   position: relative;
@@ -1072,7 +1086,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
   border-radius: 20px;
   padding: 32px;
 }
-.onboarding-logo { width: 72px; height: 72px; filter: drop-shadow(0 0 24px rgba(71,244,156,.3)); }
+.onboarding-logo {
+  width: 78px;
+  height: 78px;
+  padding: 10px;
+  filter: drop-shadow(0 0 24px rgba(239,246,255,.32));
+}
 .onboarding-card h1 { font-size: clamp(42px, 6vw, 78px); line-height: .92; margin: 12px 0; font-weight: 450; }
 .quick-grid { display: flex; flex-wrap: wrap; gap: 10px; margin: 24px 0; }
 .onboarding-card label { display: block; color: var(--muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
