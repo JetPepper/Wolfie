@@ -1,9 +1,1 @@
-<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="128" height="128" rx="28" fill="#0B1220"/>
-  <path d="M26 99H102" stroke="#C4B5FD" stroke-width="5" stroke-linecap="round"/>
-  <path d="M35 52H93V96H35V52Z" fill="url(#paper)" stroke="#EDE9FE" stroke-width="4"/>
-  <path d="M45 64H83M45 76H75M45 88H88" stroke="#1E1B4B" stroke-width="5" stroke-linecap="round"/>
-  <path d="M63 18L89 43H37L63 18Z" fill="#38D996" stroke="#BBF7D0" stroke-width="4" stroke-linejoin="round"/>
-  <circle cx="63" cy="39" r="6" fill="#07101D"/>
-  <defs><linearGradient id="paper" x1="35" y1="52" x2="91" y2="98" gradientUnits="userSpaceOnUse"><stop stop-color="#F8FAFC"/><stop offset="1" stop-color="#A78BFA"/></linearGradient></defs>
-</svg>
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Wolfie Public Disclosure"><rect width="128" height="128" rx="28" fill="#101827"/><path d="M29 82L42 38L58 52L73 25L88 54L101 62L91 88L67 103L43 95L29 82Z" fill="url(#g)" stroke="#F8FAFC" stroke-width="4" stroke-linejoin="round"/><path d="M39 30H89V41H39V30Z" fill="#F5C861"/><path d="M48 67L62 60L76 67L64 78L48 67Z" fill="#101827"/><defs><linearGradient id="g" x1="33" y1="25" x2="96" y2="103" gradientUnits="userSpaceOnUse"><stop stop-color="#60A5FA"/><stop offset="1" stop-color="#F5C861"/></linearGradient></defs></svg>

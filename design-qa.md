@@ -1,21 +1,24 @@
-# Wolfie UI Design QA
+# Wolfie Design QA
 
-Source visuals:
-- Overview cockpit reference: `codex-clipboard-705b144b-bdef-4517-b4ea-733e9e3d4598.png`
-- Deploy Bot reference: `codex-clipboard-c874f979-3c23-44e6-b6f0-3d3bda64659d.png`
+final result: passed
 
-Rendered target:
-- `http://localhost:3000`
+Reference: `/Users/brycereed/Desktop/3d reference.png`
+
+Prototype captures:
+- `artifacts/metallic-bot-thought-desktop.png`
+- `artifacts/metallic-mobile.png`
+- `artifacts/metallic-live-lock.png`
 
 Checks completed:
-- Overview state includes the left rail, Wolfie brand, top bot-mode action area, At A Glance cards, Next Opportunity, Latest Signal Intelligence, Recent Activity, and Open Positions.
-- Deploy Bot state includes the wizard steps, capital allocation control, bot mode cards, additional settings, deployment summary, guardrails, and paper-only safety notice.
-- Global truth layer still shows `SIMULATED_LIVE_MCP_LOCAL`, `PaperExchange`, real Robinhood connection false, live order submitted false, and real money at risk false.
-- Browser DOM overflow check found no horizontal overflow in the rendered Overview or Deploy Bot states.
-- Production build passed after implementation.
+- Desktop Bot Thought view follows the supplied 3D cockpit composition: top command nav, left metrics rail, central thought field, right selected-thought inspector, field navigator, bottom timeline, and control dock.
+- Typography and logo treatment were adjusted toward the condensed, spaced, technical look in the reference.
+- Metallic panels, glow states, and button-like ticker chips are present.
+- Thought nodes are interactive and open detail drawers.
+- Top navigation switches between Bot Thought, Signals, Portfolio, Risk, and History.
+- Live mode opens a locked panel and does not enable live trading.
+- Mobile viewport scales into a single-column cockpit without clipped top navigation.
+- Browser visual tests passed: `2 passed`.
+- Bot Thought now includes a Three.js/WebGL 3D solar-system scene with orbit controls, raycast node selection, animated emerging/dying thought particles, and moving thought bodies around Wolfie.
 
-Known intentional differences:
-- Icons are lightweight local glyphs rather than imported icon assets because the current frontend dependency set does not include an icon library.
-- Values remain driven by existing local PaperExchange/API data or clearly local fallback display values; no live broker or real market-data path was added.
-
-Final result: passed
+Known limitation:
+- Bot avatars are animated character marks using the current local SVG asset set; they are not yet bespoke rendered robot character illustrations.

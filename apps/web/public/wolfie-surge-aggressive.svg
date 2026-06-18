@@ -1,6 +1,1 @@
-<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="128" height="128" rx="28" fill="#0B1220"/>
-  <path d="M73 12L31 68H59L50 116L96 55H67L73 12Z" fill="url(#bolt)" stroke="#FED7AA" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M35 85C48 95 76 98 95 78" stroke="#A78BFA" stroke-width="5" stroke-linecap="round"/>
-  <defs><linearGradient id="bolt" x1="30" y1="12" x2="98" y2="113" gradientUnits="userSpaceOnUse"><stop stop-color="#FBBF24"/><stop offset="0.5" stop-color="#F97316"/><stop offset="1" stop-color="#7C3AED"/></linearGradient></defs>
-</svg>
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Wolfie Surge"><rect width="128" height="128" rx="28" fill="#120814"/><path d="M27 84L41 35L56 51L70 20L86 54L103 61L93 89L67 108L42 97L27 84Z" fill="url(#surge)" stroke="#FFE4E6" stroke-width="4" stroke-linejoin="round"/><path d="M48 67L62 59L78 67L64 80L48 67Z" fill="#120814"/><path d="M38 38L24 24M93 34L109 18M99 91L113 105" stroke="#FF6077" stroke-width="5" stroke-linecap="round"/><defs><linearGradient id="surge" x1="29" y1="20" x2="99" y2="108" gradientUnits="userSpaceOnUse"><stop stop-color="#F97316"/><stop offset=".48" stop-color="#FF6077"/><stop offset="1" stop-color="#A855F7"/></linearGradient></defs></svg>
