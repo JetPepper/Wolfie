@@ -70,7 +70,7 @@ const bots: Bot[] = [
     id: "alpha",
     name: "Wolfie Alpha",
     role: "Adaptive · Relentless",
-    avatar: assetPath("wolfie-logo.svg"),
+    avatar: assetPath("wolfie-logo.png"),
     mood: "Orbiting the highest conviction thought cluster.",
     capital: 250000,
     confidence: 72,
@@ -460,7 +460,7 @@ export default function Home() {
       {!ready && (
         <section className="onboarding-layer" aria-modal="true" role="dialog" aria-labelledby="capital-title">
           <div className="onboarding-card metal-panel">
-            <img className="onboarding-logo" src={assetPath("wolfie-logo.svg")} alt="Wolfie" />
+            <img className="onboarding-logo" src={assetPath("wolfie-logo.png")} alt="Wolfie" />
             <p className="micro-label">First step</p>
             <h1 id="capital-title">How much do you want Wolfie to trade with?</h1>
             <p>This sets your starting trading capital. Wolfie uses it to size positions, track buying power, and calculate P/L.</p>
@@ -476,7 +476,7 @@ export default function Home() {
 
       <aside className="app-sidebar metal-panel">
         <button className="brand-mark" onClick={() => setView("overview")} aria-label="Wolfie overview">
-          <img src={assetPath("wolfie-logo.svg")} alt="Wolfie" />
+          <img src={assetPath("wolfie-logo.png")} alt="Wolfie" />
           <span><b>WOLFIE</b><small>Agentic Trading</small></span>
         </button>
         <nav className="side-nav-list" aria-label="Main views">

@@ -21,6 +21,7 @@ Checks completed:
 - Signal Intelligence keeps the interactive Three.js/WebGL thought field with orbit controls, raycast node selection, moving thought bodies, and emerging/dying particles.
 - Stock references include ticker identity and company logo where a logo source exists in the local fixture.
 - Wolfie logo/avatar treatments now sit on a bright white/gray full-moon disc across the app shell, onboarding, and bot character surfaces.
+- App logo instances now use the supplied `wolfie-logo.png` asset.
 - Metallic panels use sharper line work, more restrained highlights, and deeper drop shadows.
 - Mobile viewport no longer clips card text into vertical columns.
 - Live mode remains locked and does not enable live trading.
