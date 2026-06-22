@@ -11,6 +11,7 @@ import {
   type DecisionFrame
 } from "./lib/agentic-runtime";
 import { formatFreshness, formatMoney, formatMoneyInput, formatPercent, formatSignedMoney, parseMoneyInput } from "./lib/format";
+import { clearLocalRuntimeState, readLocalRuntimeValue, writeLocalRuntimeValue } from "./lib/runtime/local-store";
 
 type ViewId = "dashboard" | "bots" | "signals" | "activity" | "settings";
 type Mode = "Paper" | "Live";
@@ -471,23 +472,15 @@ function browserStorage(kind: "localStorage" | "sessionStorage") {
 }
 
 function readStoredValue(key: string) {
-  try {
-    return browserStorage("localStorage")?.getItem(key) ?? null;
-  } catch {
-    return null;
-  }
+  return readLocalRuntimeValue(key);
 }
 
 function writeStoredValue(key: string, value: string) {
-  try {
-    browserStorage("localStorage")?.setItem(key, value);
-  } catch {}
+  writeLocalRuntimeValue(key, value);
 }
 
 function clearStoredState() {
-  try {
-    browserStorage("localStorage")?.clear();
-  } catch {}
+  clearLocalRuntimeState();
   try {
     browserStorage("sessionStorage")?.clear();
   } catch {}
@@ -820,7 +813,7 @@ function PageHeader({ view, onNotifications, onMenu }: { view: ViewId; onNotific
   const copy: Record<ViewId, string> = {
     dashboard: "Capital, activity, fees, and risk posture in one operating view.",
     bots: "Strategy-driven trading agents that stay off until explicitly deployed.",
-    signals: "Premium bot decision cockpit: signals, conflicts, costs, risk gates, learning, and source freshness.",
+    signals: "Bot decision cockpit: signals, conflicts, costs, risk gates, learning, and source freshness.",
     activity: "Compact ledger across buys, sells, shorts, gains, losses, fees, and net P&L.",
     settings: "Starting Capital, providers, fee schedule, trade sounds, and deployment defaults."
   };

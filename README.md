@@ -4,6 +4,10 @@ Wolfie is a source-backed live-agent beta agentic trading intelligence app. The 
 
 The app does not claim live brokerage execution. Paper mode uses the user's Wolfie capital amount for allocation, risk, trade economics, and bot decision review. Live mode is a professional setup state until authorized broker/execution paths, disclosures, account authorization, and execution audit logs are implemented.
 
+Wolfie is local-first and all-or-nothing. Local Explore Mode opens without login and keeps exploration, simulated capital, bot configuration, paper behavior, and decision review local. Full Wolfie/live runtime access requires a valid signed `FULL_WOLFIE` entitlement and device binding. Wolfie Cloud may verify account/license/device metadata, but it must not receive trade data, broker data, strategy data, Agent Mandates, watchlists, source weights, risk settings, order intents, execution results, P&L, balances, or local decision logs.
+
+Production signing, native desktop secure storage, SQLCipher, OS keychain storage, code signing, notarization, and real broker execution are not complete in this web-runtime pass. The framework fails closed for production live/full runtime when verification or connector implementation is absent.
+
 ## Active Product Surface
 
 - Dashboard: capital, available allocation, decision ledger, bot/source status, and empty states until source-backed symbols or paper activity exist.
@@ -64,12 +68,13 @@ When no production source is connected, the app labels the state honestly instea
 Common commands:
 
 ```bash
+corepack pnpm --dir apps/web test:architecture
 corepack pnpm --dir apps/web build
 corepack pnpm --dir apps/web test:visual
 corepack pnpm --dir apps/web dev
 ```
 
-`corepack pnpm --dir apps/web lint` currently invokes Next's ESLint setup prompt because this repo does not yet have an ESLint configuration. It is not a valid non-interactive lint check until config is added.
+`corepack pnpm --dir apps/web lint` runs ESLint non-interactively against the app and architecture tests.
 
 ## Local Review
 

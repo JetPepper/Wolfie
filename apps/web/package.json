@@ -5,9 +5,16 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "lint": "next lint",
+    "lint": "eslint app tests/architecture --ext .ts,.tsx",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "cd ../.. && playwright test",
-    "test:visual": "cd ../.. && playwright test"
+    "test:visual": "cd ../.. && playwright test",
+    "test:architecture:unit": "rm -rf .architecture-build && tsc -p tsconfig.architecture.json && node .architecture-build/tests/architecture/runtime-architecture.test.js",
+    "test:architecture:playwright": "cd ../.. && playwright test tests/runtime-access.spec.ts",
+    "scan:forbidden-visible": "node scripts/forbidden-visible-scan.mjs",
+    "scan:private-keys": "node scripts/private-key-scan.mjs",
+    "scan:cloud-fetch": "node scripts/cloud-fetch-scan.mjs",
+    "test:architecture": "corepack pnpm typecheck && corepack pnpm lint && corepack pnpm test:architecture:unit && corepack pnpm test:architecture:playwright && corepack pnpm scan:forbidden-visible && corepack pnpm scan:private-keys && corepack pnpm scan:cloud-fetch"
   },
   "dependencies": {
     "next": "15.1.4",
