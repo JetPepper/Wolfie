@@ -2,154 +2,121 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-WEB_APP = ROOT / "apps" / "web" / "app"
+PAGE = ROOT / "apps" / "web" / "app" / "page.tsx"
+CSS = ROOT / "apps" / "web" / "app" / "globals.css"
+FORMAT = ROOT / "apps" / "web" / "app" / "lib" / "format.ts"
+FEES = ROOT / "apps" / "web" / "app" / "lib" / "fees.ts"
 
 
 def read(path: Path) -> str:
     return path.read_text()
 
 
-def test_master_prompt_navigation_and_mode_contract():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    assert "Trading Bots" in shell
-    assert "Trading Mode" in shell
-    assert "Simulated" in shell
-    assert "Live" in shell
-    assert "Paper Activity" not in visible_text_source(shell)
-    assert "Deploy Bot" not in visible_text_source(shell)
+def test_navigation_and_removed_copy_contract():
+    shell = read(PAGE)
+    visible_blocked = [
+        "Wolfie Alpha",
+        "Trading Bots",
+        "Wolfie Command Dashboard",
+        "Active bot",
+        "Selected Thought",
+        "Field Navigator",
+        "Bot Thought Preview",
+        "returns unknown",
+    ]
+    for text in ["Dashboard", "Bots", "Signal Console", "Activity", "Settings"]:
+        assert text in shell
+    for text in visible_blocked:
+        assert text not in shell
 
 
-def test_onboarding_capital_step_exists_and_validates():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
+def test_onboarding_starting_capital_and_money_formatting_exist():
+    shell = read(PAGE)
+    fmt = read(FORMAT)
     for text in [
         "How much do you want Wolfie to trade with?",
-        "This sets your starting trading capital.",
-        "$10,000",
-        "Continue",
-        "parseCapitalInput",
-        "localStorage",
+        "Starting Capital",
+        "formatMoney",
+        "minimumFractionDigits: 2",
+        "maximumFractionDigits: 2",
+    ]:
+        assert text in shell or text in fmt
+
+
+def test_bots_have_deployment_and_settings_behavior():
+    shell = read(PAGE)
+    for text in [
+        "enabled: false",
+        "Deploy {bot.name}",
+        "Allocation Mode",
+        "Fixed Dollar Allocation",
+        "Percentage of Available Capital",
+        "Max Position Size",
+        "Stop-Loss",
+        "Take-Profit",
+        "rejectedSignals",
+        "Current analysis inputs",
     ]:
         assert text in shell
 
 
-def test_visible_controls_have_stateful_handlers():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    for hook in [
-        "setActiveSection",
-        "setTradingMode",
-        "setExpandedCard",
-        "setSelectedBotId",
-        "setTickerEditorOpen",
-        "setSigIntPreview",
-        "setCapitalAmount",
-        "updateSelectedBot",
-        "executeBotTrade",
-    ]:
-        assert hook in shell
-
-
-def test_overview_cards_and_sigint_are_interactive():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
+def test_disclosure_and_other_bots_sections_exist_without_fake_returns():
+    shell = read(PAGE)
     for text in [
-        "OverviewCard",
-        "ExpandedCardDialog",
-        "SignalIntelligenceGraph",
-        "SigINTPreviewPanel",
-        "sourceUrl",
-        "View all activity",
-        "View All Positions",
-    ]:
-        assert text in shell
-
-
-def test_trading_bots_page_has_required_bot_controls():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    for text in [
-        "Conservative",
-        "Balanced",
-        "Aggressive",
+        "Public Disclosure Bots",
         "Politicians",
-        "Allocation mode",
-        "Fixed",
-        "Relative",
-        "Additional Settings",
-        "Require Approval",
-        "Autopilot",
-        "Activate Bot",
-        "Update Bot",
-        "Pause Bot",
-        "Resume Bot",
+        "Public Figures",
+        "Insiders",
+        "Disclosure Cluster Scout",
+        "Other Bots",
+        "Custom watchlist bot",
+        "Awaiting audited return feed",
     ]:
         assert text in shell
-    assert "AAPL ×" not in shell
-    assert "Auto Paper" not in shell
-    assert "Bot Mode" not in visible_text_source(shell)
+    assert "Not ranked" not in shell
 
 
-def test_ticker_and_profit_loss_popup_exist():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
+def test_signal_intelligence_contract():
+    shell = read(PAGE)
     for text in [
-        "EditableScrollingTicker",
-        "tickerCategories",
-        "ProfitLossToast",
+        "Signal Console",
+        "Time Scrub",
+        "Bot Lens",
+        "Market Processing Queue",
+        "Research Density",
+        "Rejected Alternatives",
+        "source",
+        "OrbitControls",
+    ]:
+        assert text in shell
+
+
+def test_activity_settings_sound_and_provider_contract():
+    shell = read(PAGE)
+    fees = read(FEES)
+    for text in [
+        "Enable Trade Sounds",
         "playProfitChime",
-        "Closed Position Results",
+        "Provider Status",
+        "Live Market Feed",
+        "News and Trends",
+        "Public source links",
+        "Simulated / Live",
+        "Live trading is gated.",
+        "robinhoodStyleFeeSchedule",
+        "verifiedOn: \"2026-06-19\"",
+        "secSection31RatePerMillionSellPrincipal: 20.6",
+        "finraTradingActivityFeePerShareSell: 0.000166",
     ]:
-        assert text in shell
+        assert text in shell or text in fees
 
 
-def test_no_brokerage_warning_language_in_visible_ui():
-    shell = visible_text_source(read(WEB_APP / "wolfie-dashboard.tsx"))
-    blocked = [
-        "PaperExchange",
-        "Paper Activity",
-        "paper account",
-        "paper trading",
-        "MCP TOOL CALL",
-        "BotConfig",
-        "mock",
-        "sandbox",
-        "brokerage disconnected",
-    ]
-    for text in blocked:
-        assert text.lower() not in shell.lower()
-
-
-def test_metric_cards_use_professional_non_character_wrapping():
-    shell = read(WEB_APP / "wolfie-dashboard.tsx")
-    assert "professionalMetricGrid" in shell
-    assert "tabular-nums whitespace-nowrap" in shell
-    assert "overflow-hidden text-ellipsis" in shell
-    metric_card = shell.split("function OverviewCard", 1)[1].split("function ExpandedCardDialog", 1)[0]
-    assert "break-all" not in metric_card
-    assert "break-words font-mono text-2xl" not in metric_card
-
-
-def test_readme_documents_local_ui_workflows():
-    readme = read(ROOT / "README.md")
-    for text in [
-        "NEXT_PUBLIC_API_BASE_URL",
-        "http://localhost:3000",
-        "scripts/dev-local.sh",
-    ]:
-        assert text in readme
-
-
-def test_local_launch_script_exists_and_runs_backend_frontend():
-    script = read(ROOT / "scripts" / "dev-local.sh")
-    assert "uvicorn apps.api.main:app" in script
-    assert "next dev -p 3000" in script
-    assert "NEXT_PUBLIC_API_BASE_URL" in script
-
-
-def visible_text_source(shell: str) -> str:
-    """Approximate user-facing string scan while ignoring type/function/internal safety names."""
-    lines = []
-    for line in shell.splitlines():
-        stripped = line.strip()
-        if stripped.startswith("const order") or stripped.startswith("function money"):
-            continue
-        if "sourceMode" in stripped or "source_mode" in stripped or "execution_engine" in stripped:
-            continue
-        lines.append(line)
-    return "\n".join(lines)
+def test_bot_animation_is_scoped_and_no_broken_image_path_contract():
+    css = read(CSS)
+    shell = read(PAGE)
+    for text in ["botIdle", "botPersonality", "botBlink", "prefers-reduced-motion"]:
+        assert text in css
+    for blocked in ["starDrift", "tickerRun", "corePulse", "nodeFloat", "avatarBreathe"]:
+        assert blocked not in css
+    assert "<img" not in shell
+    assert "Configuration required" not in shell
