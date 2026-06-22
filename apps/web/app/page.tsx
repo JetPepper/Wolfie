@@ -462,6 +462,9 @@ const navIcons: Record<ViewId, string> = {
   settings: "/mock-icon-settings.png"
 };
 
+const appBasePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const assetPath = (path: string) => `${appBasePath}${path}`;
+
 function browserStorage(kind: "localStorage" | "sessionStorage") {
   if (typeof window === "undefined") return null;
   try {
@@ -695,12 +698,12 @@ export default function Home() {
       <aside className="sidebar panel">
         <button className="brand-button" onClick={() => { setDrawer(null); setView("dashboard"); }} aria-label="Wolfie overview"><Brand /></button>
         <nav aria-label="Main views" className="side-nav">
-          {nav.map(([id, label]) => <button key={id} className={view === id ? "active" : ""} onClick={() => { setDrawer(null); setView(id); }}><img src={navIcons[id]} alt="" />{label}</button>)}
+          {nav.map(([id, label]) => <button key={id} className={view === id ? "active" : ""} onClick={() => { setDrawer(null); setView(id); }}><img src={assetPath(navIcons[id])} alt="" />{label}</button>)}
         </nav>
         <div className="mode-card">
           <span>Trading Mode</span>
           <div className="segmented">
-            <button className={mode === "Simulated" ? "active" : ""} onClick={() => requestMode("Simulated")}><img src="/mock-icon-pulse.png" alt="" />Simulated</button>
+            <button className={mode === "Simulated" ? "active" : ""} onClick={() => requestMode("Simulated")}><img src={assetPath("/mock-icon-pulse.png")} alt="" />Simulated</button>
             <button onClick={() => requestMode("Live")}><i />Live</button>
           </div>
         </div>
@@ -708,7 +711,7 @@ export default function Home() {
           {liveSnapshot.providers.slice(0, 4).map((provider) => <button key={provider.name} className={provider.tone} onClick={() => { setSelectedProvider(provider); setDrawer("provider"); }}><b>{provider.name}</b><small>{provider.status}</small></button>)}
         </div>
         <div className="status-card"><i /> <span>Wolfie Status</span><b>Operational</b><small>All systems nominal</small></div>
-        <button className="profile-card" onClick={() => { setDrawer(null); setView("settings"); }}><img src="/mock-profile-avatar.png" alt="" /><span><b>Alpha Operator</b><small>Administrator</small></span><em>⌄</em></button>
+        <button className="profile-card" onClick={() => { setDrawer(null); setView("settings"); }}><img src={assetPath("/mock-profile-avatar.png")} alt="" /><span><b>Alpha Operator</b><small>Administrator</small></span><em>⌄</em></button>
       </aside>
 
       <section className="stage">
@@ -828,8 +831,8 @@ function PageHeader({ view, onNotifications, onMenu }: { view: ViewId; onNotific
       </div>
       <div className="top-controls" aria-label="Session controls">
         <span>9:42:17 AM CT</span>
-        <button aria-label="Notifications" onClick={onNotifications}><img src="/mock-icon-bell.png" alt="" /><span>3</span></button>
-        <button aria-label="Menu" onClick={onMenu}><img src="/mock-icon-menu.png" alt="" /></button>
+        <button aria-label="Notifications" onClick={onNotifications}><img src={assetPath("/mock-icon-bell.png")} alt="" /><span>3</span></button>
+        <button aria-label="Menu" onClick={onMenu}><img src={assetPath("/mock-icon-menu.png")} alt="" /></button>
       </div>
     </header>
   );
@@ -879,7 +882,7 @@ function Dashboard(props: { capital: number; availableCapital: number; allocated
       <section className="metric-strip panel">
         {metrics.map((metric) => (
           <button key={metric.label} className="metric-card" onClick={metric.action}>
-            <img src={metric.icon} alt="" />
+            <img src={assetPath(metric.icon)} alt="" />
             <span>{metric.label}</span>
             <b>{metric.value}</b>
             {metric.sub && <small>{metric.sub}</small>}
@@ -896,7 +899,7 @@ function Dashboard(props: { capital: number; availableCapital: number; allocated
             {ledgerRows.map((row) => (
               <button key={row.id} className="ledger-row" onMouseDown={(event) => event.button === 0 && activateLedgerRow(row)} onClick={() => activateLedgerRow(row)}>
                 <span>{row.time}</span>
-                <span><img src={row.type === "News" ? "/mock-icon-settings.png" : "/mock-icon-activity.png"} alt="" />{row.type}</span>
+                <span><img src={assetPath(row.type === "News" ? "/mock-icon-settings.png" : "/mock-icon-activity.png")} alt="" />{row.type}</span>
                 <span><SourceDot label={row.source} /><b>{row.source}</b>{row.sourceMeta && <small>{row.sourceMeta}</small>}</span>
                 <span><AssetLogo symbol={row.symbol} /></span>
                 <span><em className={`trade-pill ${row.tone}`}>{row.action}</em></span>
@@ -928,7 +931,7 @@ function Dashboard(props: { capital: number; availableCapital: number; allocated
             {activeSourceRows.map((news) => (
               <article key={news.title} className="news-row">
                 <div><span>{news.source}</span><small>{news.age}</small><p>{news.title}</p></div>
-                <img src={news.image} alt="" />
+                <img src={assetPath(news.image)} alt="" />
               </article>
             ))}
             <button className="text-link" onClick={() => props.setView("signals")}>View All News →</button>
@@ -940,7 +943,7 @@ function Dashboard(props: { capital: number; availableCapital: number; allocated
           <div className="brief-list">
             {props.decisionFrames.slice(0, 5).map((frame) => (
               <button key={frame.id} onClick={() => props.selectFrame(frame.id)}>
-                <img src={frame.riskGate.status === "closed" ? "/mock-icon-settings.png" : "/mock-icon-signal.png"} alt="" />
+                <img src={assetPath(frame.riskGate.status === "closed" ? "/mock-icon-settings.png" : "/mock-icon-signal.png")} alt="" />
                 <span>{frame.currentDecision}<b className={frame.riskGate.status === "closed" ? "warn" : ""}>Risk gate: {frame.riskGate.status}</b></span>
               </button>
             ))}
@@ -1031,7 +1034,7 @@ function BotDeploymentConsole({ bot, capital, updateBot }: { bot: BotRuntime | n
     return (
       <section className="panel bot-deployment-console bot-empty-console">
         <div className="bot-detail-head">
-          <img src="/mock-icon-bots.png" alt="" />
+          <img src={assetPath("/mock-icon-bots.png")} alt="" />
           <div><h2>Selected Bot Deployment Console</h2><p>Select an agent to configure strategy, risk, capital, sources, and deployment permissions.</p></div>
           <span className="state-off">Waiting</span>
         </div>
@@ -1628,7 +1631,7 @@ function RobotAvatar({ bot, small = false }: { bot: Pick<BotRuntime, "id" | "nam
   };
   return (
     <span className={`robot-avatar image-avatar ${bot.id} mood-${bot.risk.toLowerCase()} ${small ? "small" : ""}`} aria-label={`${bot.name} robot avatar`}>
-      {sources[bot.id] ? <img src={sources[bot.id]} alt="" /> : <span className="robot-face" aria-hidden="true"><i /><em /><strong /></span>}
+      {sources[bot.id] ? <img src={assetPath(sources[bot.id])} alt="" /> : <span className="robot-face" aria-hidden="true"><i /><em /><strong /></span>}
       <b>{bot.risk}</b>
     </span>
   );
@@ -1784,7 +1787,7 @@ function PerformanceChartPanel({ mode, symbol, interval, bots, capital, netPnl }
   return (
     <div className={`stock-chart performance-${mode.toLowerCase()}`} role="img" aria-label={`${label} chart`}>
       <div className="stock-chart-head">
-        <div>{mode === "Stock" ? <AssetLogo symbol={symbol} /> : <img className="performance-mark" src={mode === "Bots" ? "/mock-icon-bots.png" : "/mock-metric-pnl.png"} alt="" />}<span>{label}</span></div>
+        <div>{mode === "Stock" ? <AssetLogo symbol={symbol} /> : <img className="performance-mark" src={assetPath(mode === "Bots" ? "/mock-icon-bots.png" : "/mock-metric-pnl.png")} alt="" />}<span>{label}</span></div>
         <b>{formatMoney(last.close)}</b>
         <small className={change >= 0 ? "gain" : "loss"}>{formatSignedMoney(change)} ({changePercent > 0 ? "+" : ""}{formatPercent(changePercent, 2)})</small>
       </div>
