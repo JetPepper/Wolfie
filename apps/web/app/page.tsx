@@ -13,7 +13,7 @@ import {
 import { formatFreshness, formatMoney, formatMoneyInput, formatPercent, formatSignedMoney, parseMoneyInput } from "./lib/format";
 
 type ViewId = "dashboard" | "bots" | "signals" | "activity" | "settings";
-type Mode = "Simulated" | "Live";
+type Mode = "Paper" | "Live";
 type BotId = string;
 type AllocationMode = "Fixed" | "Percent";
 type Direction = "Long" | "Short";
@@ -156,7 +156,7 @@ const initialBots: BotRuntime[] = [
     strategy: "Large-cap quality, drawdown defense, dividend stability",
     risk: "Low",
     defaultAllocation: 12,
-    watchlist: ["MSFT", "AAPL", "SPY"],
+    watchlist: [],
     thesis: "Waits for durable support, clean spreads, and low correlation before committing capital.",
     decision: "Holding capital offline until the user deploys the bot.",
     nextAction: "Review support zones and cash reserve guardrails.",
@@ -181,7 +181,7 @@ const initialBots: BotRuntime[] = [
     strategy: "Momentum ignition, volatility breakout, high-risk growth",
     risk: "High",
     defaultAllocation: 10,
-    watchlist: ["NVDA", "TSLA", "COIN"],
+    watchlist: [],
     thesis: "Pursues fast continuation only after volume, trend, and invalidation align.",
     decision: "Rejecting first-pulse breakouts until follow-through proves durable.",
     nextAction: "Prepare a small starter only if volume expands above baseline.",
@@ -206,9 +206,9 @@ const initialBots: BotRuntime[] = [
     strategy: "Cross-signal allocation across momentum, news, and macro",
     risk: "Medium",
     defaultAllocation: 16,
-    watchlist: ["NVDA", "AMD", "QQQ"],
+    watchlist: [],
     thesis: "Ranks ideas by confluence, catalyst freshness, spread quality, and downside room.",
-    decision: "Watching NVDA while keeping allocation reviewable.",
+    decision: "Waiting for a user watchlist, scanner discovery, or source-backed ticker before reviewing allocation.",
     nextAction: "Escalate only if market breadth and volume remain synchronized.",
     rejectedSignals: ["crowded trade without breadth", "stale news", "weak sector confirmation"],
     inputs: ["market intelligence", "current news", "market trends", "risk conditions"],
@@ -231,7 +231,7 @@ const initialBots: BotRuntime[] = [
     strategy: "Mean reversion, defensive drawdown protection, sentiment fade",
     risk: "Medium",
     defaultAllocation: 8,
-    watchlist: ["GME", "RIVN", "ARKK"],
+    watchlist: [],
     thesis: "Looks for exhausted moves where sentiment decouples from liquidity and fundamentals.",
     decision: "Rejecting meme-led spikes without borrow, liquidity, or catalyst support.",
     nextAction: "Wait for failed breakout confirmation.",
@@ -299,7 +299,7 @@ const otherBotProfiles: Record<string, { personality: string; archetype: string;
   "Volatility breakout": { personality: "Pressure-release robot", archetype: "Compression breakout", strategy: "Waits for volatility compression to release with volume and defined invalidation.", risk: "High", tone: "pressure", universe: "Liquid high-volatility equities and ETFs", inputs: ["volatility", "volume", "candlesticks"] },
   "Sector rotation": { personality: "Allocation navigator robot", archetype: "Sector strength rotation", strategy: "Rotates exposure only when sector breadth and relative strength confirm.", risk: "Medium", tone: "navigator", universe: "Sector ETFs and liquid sector leaders", inputs: ["sector breadth", "relative strength", "market data"] },
   "News arbitrage": { personality: "Headline-response robot", archetype: "Catalyst reaction", strategy: "Scores confirmed headlines and rejects stale or unsourced catalysts.", risk: "Medium", tone: "headline", universe: "Large-cap names with verified catalyst flow", inputs: ["news", "source health", "market data"] },
-  "Defensive drawdown protection": { personality: "Shield robot", archetype: "Portfolio defense", strategy: "Cuts exposure and favors hedges when drawdown pressure rises.", risk: "Low", tone: "shield", universe: "SPY, QQQ, defensive ETFs, cash-equivalent controls", inputs: ["risk model", "correlation", "market data"] },
+  "Defensive drawdown protection": { personality: "Shield robot", archetype: "Portfolio defense", strategy: "Cuts exposure and favors hedges when drawdown pressure rises.", risk: "Low", tone: "shield", universe: "User-selected index, defensive, or cash-equivalent controls", inputs: ["risk model", "correlation", "market data"] },
   "Large-cap quality": { personality: "Blue-chip sentinel robot", archetype: "Quality compounder", strategy: "Filters large caps for profitability, liquidity, and trend durability.", risk: "Low", tone: "bluechip", universe: "Profitable large caps and quality ETFs", inputs: ["fundamentals", "price/volume", "news"] },
   "Small-cap momentum": { personality: "Nimble scout robot", archetype: "Small-cap acceleration", strategy: "Requires liquidity, spread, and volume confirmation before sizing small caps.", risk: "High", tone: "nimble", universe: "Liquid small caps with volume and spread constraints", inputs: ["liquidity", "volume", "news"] },
   "AI technology trend": { personality: "Neural research robot", archetype: "AI trend analysis", strategy: "Ranks AI infrastructure and software leaders by trend durability.", risk: "Medium", tone: "neural", universe: "AI semiconductors, cloud, software, power infrastructure", inputs: ["news", "sector breadth", "market data"] },
@@ -322,7 +322,7 @@ function makeTradingBot(name: string, index: number): BotRuntime {
     strategy: profile.strategy,
     risk: profile.risk,
     defaultAllocation: 3 + (index % 5),
-    watchlist: ["SPY", "NVDA", "AAPL"],
+    watchlist: [],
     thesis: profile.strategy,
     decision: "Inactive until configured, saved, and deployed.",
     nextAction: "Save strategy mandate and validate allocation.",
@@ -401,31 +401,27 @@ const publicDisclosureSources = [
   { label: "Senate disclosures", url: "https://efdsearch.senate.gov/" }
 ];
 
-const politicianNames = ["Nancy Pelosi", "Josh Gottheimer", "Dan Crenshaw", "Michael McCaul", "Ro Khanna", "Debbie Wasserman Schultz", "Tommy Tuberville", "Lois Frankel", "Markwayne Mullin", "Daniel Goldman"];
-const publicFigureNames = ["Warren Buffett", "Elon Musk", "Bill Ackman", "Cathie Wood", "Michael Burry", "Jeff Bezos", "Mark Cuban", "Stanley Druckenmiller", "Peter Thiel", "Ray Dalio"];
-const insiderNames = ["Jensen Huang", "Tim Cook", "Satya Nadella", "Lisa Su", "Mary Barra", "Jamie Dimon", "Brian Chesky", "Marc Benioff", "Reed Hastings", "Andy Jassy"];
+const politicianNames = ["Configured House disclosure profile", "Configured Senate disclosure profile", "Configured committee disclosure profile"];
+const publicFigureNames = ["Configured public-figure source review"];
+const insiderNames = ["Configured SEC officer profile", "Configured SEC director profile", "Configured beneficial-owner profile"];
 
 function disclosureProfile(name: string, category: DisclosurePerson["category"], index: number): DisclosurePerson {
   const isPolitician = category === "Politicians";
   const isInsider = category === "Insiders";
-  const symbols = isInsider ? ["NVDA", "AAPL", "MSFT", "AMD", "GM", "JPM", "ABNB", "CRM", "NFLX", "AMZN"] : isPolitician ? ["NVDA", "AAPL", "MSFT", "SPY", "TSLA", "QQQ", "COIN", "AMD", "AMZN", "META"] : ["AAPL", "TSLA", "SPY", "QQQ", "GME", "AMZN", "META", "COIN", "MSFT", "NVDA"];
-  const symbol = symbols[index % symbols.length];
-  const hasPublicRows = isPolitician || isInsider;
+  const hasPublicRows = false;
   return {
     name,
     category,
     rank: index + 1,
     role: isPolitician ? "Public official disclosure profile" : isInsider ? "Officer/director disclosure subject" : "Public figure source review",
-    company: isInsider ? symbol : undefined,
+    company: undefined,
     winRate: hasPublicRows ? 72.5 - index * 1.7 : null,
     evaluatedTrades: hasPublicRows ? 44 - index * 2 : 0,
     estimatedReturn: hasPublicRows ? 18200 - index * 1100 : null,
     lastDisclosure: hasPublicRows ? `2026-06-${String(Math.max(1, 18 - index)).padStart(2, "0")}` : "No public trading disclosure found",
-    assets: [{ symbol, name: symbol }],
+    assets: [],
     sources: isPolitician ? [{ label: "House disclosures", url: "https://disclosures-clerk.house.gov/" }, { label: "Senate disclosures", url: "https://efdsearch.senate.gov/" }] : [{ label: "SEC EDGAR", url: "https://www.sec.gov/edgar/search/" }],
-    records: hasPublicRows ? [
-      { date: `2026-06-${String(Math.max(1, 17 - index)).padStart(2, "0")}`, disclosureDate: `2026-06-${String(Math.max(1, 18 - index)).padStart(2, "0")}`, symbol, type: index % 3 === 0 ? "Buy" : "Disclosure", amount: index % 2 === 0 ? "$50K - $100K" : "$15K - $50K", source: isInsider ? "SEC Form 4" : "Public disclosure portal" }
-    ] : [],
+    records: [],
     methodology: hasPublicRows ? "Win rate compares disclosed transactions against forward price windows after source date, disclosure date, and latency controls." : "No win rate is calculated without public transaction disclosures tied to source records.",
     status: hasPublicRows ? (isInsider ? "SEC/Form 4 source linked; parser status visible." : "Official disclosure source linked; latency modeled.") : "No public trading disclosure found."
   };
@@ -455,11 +451,11 @@ const nav: [ViewId, string][] = [
 ];
 
 const navIcons: Record<ViewId, string> = {
-  dashboard: "/mock-icon-dashboard.png",
-  bots: "/mock-icon-bots.png",
-  signals: "/mock-icon-signal.png",
-  activity: "/mock-icon-activity.png",
-  settings: "/mock-icon-settings.png"
+  dashboard: "/source-icon-dashboard.png",
+  bots: "/source-icon-bots.png",
+  signals: "/source-icon-signal.png",
+  activity: "/source-icon-activity.png",
+  settings: "/source-icon-settings.png"
 };
 
 const appBasePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
@@ -520,22 +516,27 @@ const emptyLiveSnapshot: LiveProviderSnapshot = {
 export default function Home() {
   const [ready, setReady] = useState(false);
   const [view, setView] = useState<ViewId>("dashboard");
-  const [mode, setMode] = useState<Mode>("Simulated");
+  const [mode, setMode] = useState<Mode>("Paper");
   const [capital, setCapital] = useState(0);
   const [draftCapital, setDraftCapital] = useState("$1,000,000.00");
   const [bots, setBots] = useState<BotRuntime[]>(allInitialBots);
   const [trades, setTrades] = useState<Trade[]>([]);
   const [selectedBotId, setSelectedBotId] = useState<BotId | null>(null);
-  const [selectedFrameId, setSelectedFrameId] = useState("compass-AAPL");
+  const [selectedFrameId, setSelectedFrameId] = useState<string | null>(null);
   const [drawer, setDrawer] = useState<DrawerId | null>(null);
-  const [selectedAsset, setSelectedAsset] = useState("NVDA");
+  const [selectedAsset, setSelectedAsset] = useState("");
   const [selectedProvider, setSelectedProvider] = useState<ProviderCard | null>(null);
   const [selectedTradeId, setSelectedTradeId] = useState<string | null>(null);
   const [activityFilter, setActivityFilter] = useState("All");
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [highlightCapital, setHighlightCapital] = useState(false);
   const liveSnapshot = useLiveProviderSnapshot();
-  const decisionFrames = useMemo(() => buildDecisionFrames(capital || parseMoneyInput(draftCapital) || 1000000), [capital, draftCapital]);
+  const activeSymbols = useMemo(() => Array.from(new Set([
+    ...trades.map((trade) => trade.symbol),
+    ...bots.flatMap((bot) => bot.enabled ? bot.watchlist : []),
+    ...liveSnapshot.quotes.map((quote) => quote.symbol)
+  ].map((symbol) => symbol.trim().toUpperCase()).filter(Boolean))), [bots, trades, liveSnapshot.quotes]);
+  const decisionFrames = useMemo(() => buildDecisionFrames(capital || parseMoneyInput(draftCapital) || 0, activeSymbols), [capital, draftCapital, activeSymbols]);
 
   useEffect(() => {
     const storedCapital = readStoredValue("wolfie.capital");
@@ -553,7 +554,7 @@ export default function Home() {
     }
     if (storedReady === "false") setReady(false);
     if (storedReady === "true") setReady(true);
-    if (storedMode === "Simulated" || storedMode === "Live") setMode(storedMode);
+    if (storedMode === "Paper" || storedMode === "Live") setMode(storedMode);
     if (storedBots) {
       try { setBots(mergeStoredBots(JSON.parse(storedBots))); } catch {}
     }
@@ -585,8 +586,8 @@ export default function Home() {
   }, []);
 
   const selectedBot = selectedBotId ? bots.find((bot) => bot.id === selectedBotId) || null : null;
-  const selectedFrame = decisionFrames.find((frame) => frame.id === selectedFrameId) || decisionFrames[0];
-  const selectedActivity = trades.find((trade) => trade.id === selectedTradeId) || trades.find((trade) => trade.symbol === selectedFrame.symbol) || null;
+  const selectedFrame = decisionFrames.find((frame) => frame.id === selectedFrameId) || decisionFrames[0] || null;
+  const selectedActivity = trades.find((trade) => trade.id === selectedTradeId) || (selectedFrame ? trades.find((trade) => trade.symbol === selectedFrame.symbol) : null) || null;
   const closedTrades = trades.filter((trade) => trade.status === "Closed");
   const openTrades = trades.filter((trade) => trade.status === "Open");
   const realizedPnl = closedTrades.reduce((sum, trade) => sum + trade.grossPnl - trade.fees, 0);
@@ -654,9 +655,10 @@ export default function Home() {
     setDraftCapital("$1,000,000.00");
     setBots(allInitialBots);
     setTrades([]);
-    setMode("Simulated");
+    setMode("Paper");
     setSelectedBotId(null);
-    setSelectedFrameId("compass-AAPL");
+    setSelectedFrameId(null);
+    setSelectedAsset("");
     setActivityFilter("All");
     setSoundEnabled(false);
     setReady(false);
@@ -703,7 +705,7 @@ export default function Home() {
         <div className="mode-card">
           <span>Trading Mode</span>
           <div className="segmented">
-            <button className={mode === "Simulated" ? "active" : ""} onClick={() => requestMode("Simulated")}><img src={assetPath("/mock-icon-pulse.png")} alt="" />Simulated</button>
+            <button className={mode === "Paper" ? "active" : ""} onClick={() => requestMode("Paper")}><img src={assetPath("/source-icon-pulse.png")} alt="" />Paper</button>
             <button onClick={() => requestMode("Live")}><i />Live</button>
           </div>
         </div>
@@ -711,7 +713,7 @@ export default function Home() {
           {liveSnapshot.providers.slice(0, 4).map((provider) => <button key={provider.name} className={provider.tone} onClick={() => { setSelectedProvider(provider); setDrawer("provider"); }}><b>{provider.name}</b><small>{provider.status}</small></button>)}
         </div>
         <div className="status-card"><i /> <span>Wolfie Status</span><b>Operational</b><small>All systems nominal</small></div>
-        <button className="profile-card" onClick={() => { setDrawer(null); setView("settings"); }}><img src={assetPath("/mock-profile-avatar.png")} alt="" /><span><b>Alpha Operator</b><small>Administrator</small></span><em>⌄</em></button>
+        <button className="profile-card" onClick={() => { setDrawer(null); setView("settings"); }}><img src={assetPath("/source-profile-avatar.png")} alt="" /><span><b>Alpha Operator</b><small>Administrator</small></span><em>⌄</em></button>
       </aside>
 
       <section className="stage">
@@ -727,7 +729,7 @@ export default function Home() {
         <div className={`drawer-backdrop ${drawer === "provider" ? "centered-provider-backdrop" : ""}`} onClick={() => setDrawer(null)}>
           <section className={`${drawer === "provider" ? "provider-modal" : "drawer"} panel`} onClick={(event) => event.stopPropagation()}>
             <button className="drawer-close" onClick={() => setDrawer(null)}>Close</button>
-            {drawer === "thought" && <SignalFrameDrawer frame={selectedFrame} trade={selectedActivity} />}
+            {drawer === "thought" && (selectedFrame ? <SignalFrameDrawer frame={selectedFrame} trade={selectedActivity} /> : <EmptyState title="No decision frame selected" body="Add a watchlist, build a bot, or run a scanner to discover real symbols." />)}
             {drawer === "live" && <LiveDrawer confirmLiveModeReset={confirmLiveModeReset} mode={mode} />}
             {drawer === "activity" && <ActivityDrawer trade={selectedActivity} bots={bots} />}
             {drawer === "profit" && <ProfitDrawer soundEnabled={soundEnabled} />}
@@ -736,7 +738,7 @@ export default function Home() {
             {drawer === "pnl" && <PnlDrawer trades={trades} bots={bots} />}
             {drawer === "fees" && <FeesDrawer trades={trades} />}
             {drawer === "success" && <SuccessDrawer trades={trades} bots={bots} />}
-            {drawer === "asset" && <AssetDetailDrawer symbol={selectedAsset} trades={trades} />}
+            {drawer === "asset" && (selectedAsset ? <AssetDetailDrawer symbol={selectedAsset} trades={trades} /> : <EmptyState title="No asset selected" body="Add a watchlist, build a bot, or run a scanner to discover real symbols." />)}
             {drawer === "provider" && <ProviderDrawer provider={selectedProvider} liveSnapshot={liveSnapshot} close={() => setDrawer(null)} />}
           </section>
         </div>
@@ -831,31 +833,38 @@ function PageHeader({ view, onNotifications, onMenu }: { view: ViewId; onNotific
       </div>
       <div className="top-controls" aria-label="Session controls">
         <span>9:42:17 AM CT</span>
-        <button aria-label="Notifications" onClick={onNotifications}><img src={assetPath("/mock-icon-bell.png")} alt="" /><span>3</span></button>
-        <button aria-label="Menu" onClick={onMenu}><img src={assetPath("/mock-icon-menu.png")} alt="" /></button>
+        <button aria-label="Notifications" onClick={onNotifications}><img src={assetPath("/source-icon-bell.png")} alt="" /><span>3</span></button>
+        <button aria-label="Menu" onClick={onMenu}><img src={assetPath("/source-icon-menu.png")} alt="" /></button>
       </div>
     </header>
   );
 }
 
 function Dashboard(props: { capital: number; availableCapital: number; allocated: number; netPnl: number; fees: number; successRate: number | null; trades: Trade[]; bots: BotRuntime[]; decisionFrames: DecisionFrame[]; liveSnapshot: LiveProviderSnapshot; setView: (view: ViewId) => void; openStartingCapital: () => void; openMetricDrawer: (drawer: MetricDrawerId) => void; openAsset: (symbol: string) => void; selectTrade: (id: string) => void; selectFrame: (id: string) => void }) {
-  const [stockSymbol, setStockSymbol] = useState("SPY");
+  const availableSymbols = useMemo(() => Array.from(new Set([
+    ...props.trades.map((trade) => trade.symbol),
+    ...props.bots.flatMap((bot) => bot.enabled ? bot.watchlist : []),
+    ...props.liveSnapshot.quotes.map((quote) => quote.symbol),
+    ...props.decisionFrames.map((frame) => frame.symbol)
+  ].map((symbol) => symbol.trim().toUpperCase()).filter(Boolean))), [props.trades, props.bots, props.liveSnapshot.quotes, props.decisionFrames]);
+  const [stockSymbol, setStockSymbol] = useState("");
   const [stockInterval, setStockInterval] = useState("5");
   const [performanceMode, setPerformanceMode] = useState<"Portfolio" | "Bots" | "Stock">("Portfolio");
   const [newsTab, setNewsTab] = useState<"Market News" | "Filings" | "Social Sentiment">("Market News");
+  const activeStockSymbol = stockSymbol || availableSymbols[0] || "";
   const allocatedPercent = props.capital > 0 ? (props.allocated / props.capital) * 100 : 0;
   const availablePercent = props.capital > 0 ? (props.availableCapital / props.capital) * 100 : 0;
   const pnlPercent = props.capital > 0 ? (props.netPnl / props.capital) * 100 : 0;
   const signedPnlPercent = `${pnlPercent > 0 ? "+" : ""}${formatPercent(pnlPercent, 2)}`;
   const metrics = [
-    { label: "Starting Capital", value: formatMoney(props.capital), sub: "", icon: "/mock-metric-capital.png", action: props.openStartingCapital },
-    { label: "Available Capital", value: formatMoney(props.availableCapital), sub: `${formatPercent(availablePercent, 1)} available`, icon: "/mock-metric-wallet.png", action: () => props.openMetricDrawer("available") },
-    { label: "Allocated to Bots", value: formatMoney(props.allocated), sub: `${formatPercent(allocatedPercent, 1)} allocated`, icon: "/mock-metric-bot.png", action: () => props.openMetricDrawer("allocated") },
-    { label: "Net P&L", value: formatSignedMoney(props.netPnl), sub: signedPnlPercent, icon: "/mock-metric-pnl.png", action: () => props.openMetricDrawer("pnl") }
+    { label: "Starting Capital", value: formatMoney(props.capital), sub: "", icon: "/source-metric-capital.png", action: props.openStartingCapital },
+    { label: "Available Capital", value: formatMoney(props.availableCapital), sub: `${formatPercent(availablePercent, 1)} available`, icon: "/source-metric-wallet.png", action: () => props.openMetricDrawer("available") },
+    { label: "Allocated to Bots", value: formatMoney(props.allocated), sub: `${formatPercent(allocatedPercent, 1)} allocated`, icon: "/source-metric-bot.png", action: () => props.openMetricDrawer("allocated") },
+    { label: "Net P&L", value: formatSignedMoney(props.netPnl), sub: signedPnlPercent, icon: "/source-metric-pnl.png", action: () => props.openMetricDrawer("pnl") }
   ];
   const activeSourceRows = acquisitionLadder
     .filter((source) => newsTab === "Market News" ? source.lane === "news" || source.lane === "market" : newsTab === "Filings" ? source.lane === "filings" || source.lane === "finra" : source.lane === "social")
-    .map((source) => ({ source: source.adapter.split(" -> ")[0], age: source.status, title: source.detail, image: source.lane === "filings" ? "/mock-icon-settings.png" : source.lane === "social" ? "/mock-icon-signal.png" : "/mock-metric-pnl.png" }));
+    .map((source) => ({ source: source.adapter.split(" -> ")[0], age: source.status, title: source.detail, image: source.lane === "filings" ? "/source-icon-settings.png" : source.lane === "social" ? "/source-icon-signal.png" : "/source-metric-pnl.png" }));
   const ledgerRows = props.decisionFrames.map((frame) => {
     const bot = botPresets.find((preset) => preset.id === frame.botId);
     return {
@@ -896,10 +905,10 @@ function Dashboard(props: { capital: number; availableCapital: number; allocated
             <div className="ledger-head" role="row">
               <span>Time</span><span>Type</span><span>Bot / Source</span><span>Asset</span><span>Action</span><span>Size</span><span>Price</span><span>P&L</span>
             </div>
-            {ledgerRows.map((row) => (
+            {ledgerRows.length ? ledgerRows.map((row) => (
               <button key={row.id} className="ledger-row" onMouseDown={(event) => event.button === 0 && activateLedgerRow(row)} onClick={() => activateLedgerRow(row)}>
                 <span>{row.time}</span>
-                <span><img src={assetPath(row.type === "News" ? "/mock-icon-settings.png" : "/mock-icon-activity.png")} alt="" />{row.type}</span>
+                <span><img src={assetPath(row.type === "News" ? "/source-icon-settings.png" : "/source-icon-activity.png")} alt="" />{row.type}</span>
                 <span><SourceDot label={row.source} /><b>{row.source}</b>{row.sourceMeta && <small>{row.sourceMeta}</small>}</span>
                 <span><AssetLogo symbol={row.symbol} /></span>
                 <span><em className={`trade-pill ${row.tone}`}>{row.action}</em></span>
@@ -907,21 +916,21 @@ function Dashboard(props: { capital: number; availableCapital: number; allocated
                 <span>{row.price}</span>
                 <span className={row.pnl.startsWith("+") ? "gain" : ""}>{row.pnl}</span>
               </button>
-            ))}
+            )) : <EmptyState title="No source-backed decisions" body="Add a watchlist, build a bot, or run a scanner to discover real symbols." />}
           </div>
         </section>
 
         <aside className="right-stack">
           <section className="panel market-panel">
-            <div className="section-title"><h2>Performance</h2><span>{performanceMode} · {stockSymbol} · {stockInterval}m</span></div>
+            <div className="section-title"><h2>Performance</h2><span>{performanceMode}{activeStockSymbol ? ` · ${activeStockSymbol} · ${stockInterval}m` : " · Waiting"}</span></div>
             <div className="performance-tabs" aria-label="Performance chart mode">
               {(["Portfolio", "Bots", "Stock"] as const).map((mode) => <button key={mode} className={performanceMode === mode ? "active" : ""} onClick={() => setPerformanceMode(mode)}>{mode}</button>)}
             </div>
             <div className="market-toolbar" aria-label="Single stock chart controls">
-              {["SPY", "NVDA", "AAPL"].map((symbol) => <button key={symbol} className={stockSymbol === symbol ? "active" : ""} onClick={() => setStockSymbol(symbol)}>{symbol}</button>)}
+              {availableSymbols.map((symbol) => <button key={symbol} className={activeStockSymbol === symbol ? "active" : ""} onClick={() => setStockSymbol(symbol)}>{symbol}</button>)}
               {[["1", "1m"], ["5", "5m"], ["15", "15m"], ["60", "1h"]].map(([value, label]) => <button key={value} className={stockInterval === value ? "active" : ""} onClick={() => setStockInterval(value)}>{label}</button>)}
             </div>
-            <PerformanceChartPanel mode={performanceMode} symbol={stockSymbol} interval={stockInterval} bots={props.bots} capital={props.capital} netPnl={props.netPnl} />
+            <PerformanceChartPanel mode={performanceMode} symbol={activeStockSymbol} interval={stockInterval} bots={props.bots} capital={props.capital} netPnl={props.netPnl} hasRealMarketSymbol={Boolean(activeStockSymbol)} />
           </section>
           <section className="panel news-panel">
             <div className="section-title"><h2>News &amp; Trends</h2></div>
@@ -941,12 +950,12 @@ function Dashboard(props: { capital: number; availableCapital: number; allocated
         <section className="briefing panel">
           <h2>Operating Brief</h2>
           <div className="brief-list">
-            {props.decisionFrames.slice(0, 5).map((frame) => (
+            {props.decisionFrames.length ? props.decisionFrames.slice(0, 5).map((frame) => (
               <button key={frame.id} onClick={() => props.selectFrame(frame.id)}>
-                <img src={assetPath(frame.riskGate.status === "closed" ? "/mock-icon-settings.png" : "/mock-icon-signal.png")} alt="" />
+                <img src={assetPath(frame.riskGate.status === "closed" ? "/source-icon-settings.png" : "/source-icon-signal.png")} alt="" />
                 <span>{frame.currentDecision}<b className={frame.riskGate.status === "closed" ? "warn" : ""}>Risk gate: {frame.riskGate.status}</b></span>
               </button>
-            ))}
+            )) : <EmptyState title="Source acquisition waiting" body="Add a watchlist, build a bot, or run a scanner to discover real symbols." />}
           </div>
         </section>
       </div>
@@ -1034,7 +1043,7 @@ function BotDeploymentConsole({ bot, capital, updateBot }: { bot: BotRuntime | n
     return (
       <section className="panel bot-deployment-console bot-empty-console">
         <div className="bot-detail-head">
-          <img src={assetPath("/mock-icon-bots.png")} alt="" />
+          <img src={assetPath("/source-icon-bots.png")} alt="" />
           <div><h2>Selected Bot Deployment Console</h2><p>Select an agent to configure strategy, risk, capital, sources, and deployment permissions.</p></div>
           <span className="state-off">Waiting</span>
         </div>
@@ -1360,7 +1369,7 @@ function CustomBotBuilder({ capital, close, addBot }: { capital: number; close: 
       strategy,
       risk,
       defaultAllocation: 0,
-      watchlist: ["SPY"],
+      watchlist: [],
       thesis: entryRules,
       decision: enabled ? "Custom bot deployed under saved mandate." : "Custom bot saved and awaiting deployment.",
       nextAction: exitRules,
@@ -1428,9 +1437,33 @@ function CustomBotBuilder({ capital, close, addBot }: { capital: number; close: 
   );
 }
 
-function SignalConsole(props: { bots: BotRuntime[]; selectedBot: BotRuntime | null; decisionFrames: DecisionFrame[]; selectedFrame: DecisionFrame; selectBot: (id: BotId) => void; selectFrame: (id: string) => void; openFrame: (id: string) => void }) {
+function SignalConsole(props: { bots: BotRuntime[]; selectedBot: BotRuntime | null; decisionFrames: DecisionFrame[]; selectedFrame: DecisionFrame | null; selectBot: (id: BotId) => void; selectFrame: (id: string | null) => void; openFrame: (id: string) => void }) {
   const activeFrame = props.selectedBot ? props.decisionFrames.find((frame) => frame.botId === props.selectedBot?.id) || props.selectedFrame : props.selectedFrame;
-  const activePreset = botPresets.find((preset) => preset.id === activeFrame.botId) || botPresets[0];
+  const activePreset = activeFrame ? botPresets.find((preset) => preset.id === activeFrame.botId) || botPresets[0] : null;
+  if (!activeFrame || !activePreset) {
+    return (
+      <div className="signal-console-grid">
+        <section className="panel signal-roster">
+          <div className="section-title"><div><h2>Bot Roster</h2><p>Deploy a configured bot with a real watchlist before decision frames are created.</p></div></div>
+          {props.bots.slice(0, 8).map((bot) => <button key={bot.id} onClick={() => props.selectBot(bot.id)}><RobotAvatar bot={bot} small /><span><b>{bot.name}</b><small>{bot.status}</small></span><em>waiting</em></button>)}
+        </section>
+        <section className="panel signal-center">
+          <div className="section-title"><div><h2>Signal Console</h2><p>Data acquisition is waiting for a user-supplied symbol.</p></div></div>
+          <div className="market-pulse">{acquisitionLadder.map((source) => <span key={source.lane}><b>{source.lane}</b><small>{source.status} · {source.cadence}</small></span>)}</div>
+          <EmptyState title="No source-backed symbol" body="Add a watchlist, build a bot, or run a scanner to discover real symbols." />
+        </section>
+        <aside className="panel signal-economics">
+          <h2>Trade Economics</h2>
+          <EmptyState title="No trade cost frame" body="TradeCostEngine stays idle until quote, spread, volume, and route inputs are sourced." />
+          <h2>Risk Gate</h2>
+          <div className="risk-gate closed"><b>closed</b><small>Missing source-backed market data.</small><small>Live orders are disabled in this beta.</small></div>
+        </aside>
+        <section className="panel learning-memory"><h2>Source Registry Health</h2>{acquisitionLadder.map((source) => <button key={source.adapter}><b>{source.adapter}</b><span>{source.detail}</span><small>{source.status}</small></button>)}</section>
+        <section className="panel self-healing-panel"><h2>Claims Under Review</h2><EmptyState title="No article ingested" body="Claims appear only after source extraction and corroboration." /></section>
+        <section className="panel source-freshness-panel"><h2>Plain-English Concepts</h2>{Object.entries(educationGlossary).slice(0, 8).map(([term, explanation]) => <button key={term}><b>{term}</b><span>{explanation}</span></button>)}</section>
+      </div>
+    );
+  }
   return (
     <div className="signal-console-grid">
       <section className="panel signal-roster">
@@ -1509,7 +1542,7 @@ function SignalConsole(props: { bots: BotRuntime[]; selectedBot: BotRuntime | nu
   );
 }
 
-function Activity(props: { trades: Trade[]; allTrades: Trade[]; filter: string; setFilter: (value: string) => void; bots: BotRuntime[]; setSelectedFrameId: (id: string) => void; setDrawer: (drawer: "activity") => void; selectTrade: (id: string) => void; onPositiveClose: () => void; soundEnabled: boolean }) {
+function Activity(props: { trades: Trade[]; allTrades: Trade[]; filter: string; setFilter: (value: string) => void; bots: BotRuntime[]; setSelectedFrameId: (id: string | null) => void; setDrawer: (drawer: "activity") => void; selectTrade: (id: string) => void; onPositiveClose: () => void; soundEnabled: boolean }) {
   const filters = ["All", "Profitable", "Losing", "Long", "Short", ...props.bots.map((bot) => bot.id), ...Array.from(new Set(props.allTrades.map((trade) => trade.symbol)))];
   return (
     <div className="activity-grid">
@@ -1541,8 +1574,8 @@ function Settings(props: { capital: number; draftCapital: string; setDraftCapita
       </section>
       <section className="panel settings-card">
         <h2>Trading Mode</h2>
-        <div className="segmented large"><button className={props.mode === "Simulated" ? "active" : ""} onClick={() => props.requestMode("Simulated")}>Simulated</button><button onClick={() => props.requestMode("Live")}>Live</button></div>
-        <p>Brokerage activation requires account connection, authorization, disclosures, order routing, risk checks, and execution audit logs before activation.</p>
+        <div className="segmented large"><button className={props.mode === "Paper" ? "active" : ""} onClick={() => props.requestMode("Paper")}>Paper</button><button onClick={() => props.requestMode("Live")}>Live</button></div>
+        <p>Live trading is not enabled in this beta. Wolfie currently tests real intelligence with paper-only execution.</p>
       </section>
       <section className="panel provider-status">
         <h2>Provider Status</h2>
@@ -1614,7 +1647,7 @@ function ActivityDrawer({ trade, bots }: { trade: Trade | null; bots: BotRuntime
 }
 
 function LiveDrawer({ confirmLiveModeReset, mode }: { confirmLiveModeReset: () => void; mode: Mode }) {
-  return <><h2>Brokerage setup required</h2><p>Robinhood MCP is not exposed in this Codex session. Switching the mode clears local account state and waits for Robinhood MCP account, order, and execution tools before brokerage data can initialize.</p>{mode !== "Live" && <button className="primary-action" onClick={confirmLiveModeReset}>Clear Local State and Enter Brokerage Setup</button>}<div className="empty-state"><b>Exact blocker</b><p>No Robinhood MCP server/tool is installed or callable in the current tool registry.</p></div></>;
+  return <><h2>Live trading locked</h2><p>Live trading is not enabled in this beta. Wolfie currently tests real intelligence with paper-only execution.</p>{mode !== "Live" && <button className="primary-action" onClick={confirmLiveModeReset}>Clear Local State and Review Live Gate</button>}<div className="empty-state"><b>Exact blocker</b><p>No broker order route is enabled. Paper-only execution remains the active runtime.</p></div></>;
 }
 
 function ProfitDrawer({ soundEnabled }: { soundEnabled: boolean }) {
@@ -1728,7 +1761,7 @@ function ProviderDrawer({ provider, liveSnapshot, close }: { provider: ProviderC
         <div><dt>Status</dt><dd>{active.status}</dd></div>
         <div><dt>Last Refresh</dt><dd>{liveSnapshot.updatedAt ? formatFreshness(liveSnapshot.updatedAt) : "Not updated"}</dd></div>
         <div><dt>Current Provider</dt><dd>{active.name === "Market data" ? "Authorized market-data ladder with waiting/cached/fallback labels" : active.name}</dd></div>
-        <div><dt>Asset Universe</dt><dd>{assets.length ? assets.join(", ") : "Signal Console presets: SPY, NVDA, AAPL, GME, MSFT"}</dd></div>
+        <div><dt>Asset Universe</dt><dd>{assets.length ? assets.join(", ") : "No symbol selected. Add a watchlist, build a bot, or run a scanner to discover real symbols."}</dd></div>
         <div><dt>Latency</dt><dd>Browser refresh cadence; provider timestamp shown when returned by source.</dd></div>
         <div><dt>Powers</dt><dd>Live Market Feed, bot readiness, asset detail context, signal queue status, and provider health.</dd></div>
       </dl>
@@ -1738,7 +1771,7 @@ function ProviderDrawer({ provider, liveSnapshot, close }: { provider: ProviderC
         <button onClick={() => window.location.reload()}>Refresh Source</button>
         <button onClick={() => { window.dispatchEvent(new CustomEvent("wolfie:view", { detail: "settings" })); close(); }}>Configure Provider</button>
       </div>
-      <div className="asset-row-list">{(assets.length ? assets : ["NVDA", "SPY", "COIN", "GME", "AMD"]).map((symbol) => <button key={symbol} onClick={() => window.dispatchEvent(new CustomEvent("wolfie:asset", { detail: symbol }))}><AssetLogo symbol={symbol} /></button>)}</div>
+      {assets.length ? <div className="asset-row-list">{assets.map((symbol) => <button key={symbol} onClick={() => window.dispatchEvent(new CustomEvent("wolfie:asset", { detail: symbol }))}><AssetLogo symbol={symbol} /></button>)}</div> : <EmptyState title="No asset universe" body="Add a watchlist, build a bot, or run a scanner to discover real symbols." />}
     </>
   );
 }
@@ -1771,8 +1804,12 @@ function TradingViewTickerTape({ symbols }: { symbols: string[] }) {
   return <section className="ticker-tape panel"><iframe title="TradingView ticker tape" src={`https://s.tradingview.com/embed-widget/ticker-tape/?locale=en#${config}`} loading="lazy" /></section>;
 }
 
-function PerformanceChartPanel({ mode, symbol, interval, bots, capital, netPnl }: { mode: "Portfolio" | "Bots" | "Stock"; symbol: string; interval: string; bots: BotRuntime[]; capital: number; netPnl: number }) {
+function PerformanceChartPanel({ mode, symbol, interval, bots, capital, netPnl, hasRealMarketSymbol }: { mode: "Portfolio" | "Bots" | "Stock"; symbol: string; interval: string; bots: BotRuntime[]; capital: number; netPnl: number; hasRealMarketSymbol: boolean }) {
+  if (mode === "Stock") return <EmptyState title="Market consensus chart waiting" body="Add a watchlist, build a bot, or run a scanner to discover real symbols." />;
+  if (mode === "Bots") return <EmptyState title="Bot performance waiting" body="Deploy a configured bot and collect paper activity before bot performance can be drawn." />;
+  if (!capital && !netPnl && mode === "Portfolio") return <EmptyState title="Portfolio performance waiting" body="Save starting capital or import paper activity before portfolio performance is drawn." />;
   const series = performanceSeries(mode, symbol, interval, bots, capital, netPnl);
+  if (!series.length) return <EmptyState title="Performance chart waiting" body="Source-backed rows are required before Wolfie draws this chart." />;
   const values = series.flatMap((point) => [point.high, point.low]);
   const min = Math.min(...values);
   const max = Math.max(...values);
@@ -1783,11 +1820,11 @@ function PerformanceChartPanel({ mode, symbol, interval, bots, capital, netPnl }
   const change = last.close - first.open;
   const changePercent = first.open ? (change / first.open) * 100 : 0;
   const ticks = [max, min + range * .66, min + range * .33, min];
-  const label = mode === "Stock" ? `${symbol} stock performance` : mode === "Bots" ? "Bot performance" : "Portfolio performance";
+  const label = "Portfolio performance";
   return (
     <div className={`stock-chart performance-${mode.toLowerCase()}`} role="img" aria-label={`${label} chart`}>
       <div className="stock-chart-head">
-        <div>{mode === "Stock" ? <AssetLogo symbol={symbol} /> : <img className="performance-mark" src={assetPath(mode === "Bots" ? "/mock-icon-bots.png" : "/mock-metric-pnl.png")} alt="" />}<span>{label}</span></div>
+        <div><img className="performance-mark" src={assetPath("/source-metric-pnl.png")} alt="" /><span>{label}</span></div>
         <b>{formatMoney(last.close)}</b>
         <small className={change >= 0 ? "gain" : "loss"}>{formatSignedMoney(change)} ({changePercent > 0 ? "+" : ""}{formatPercent(changePercent, 2)})</small>
       </div>
@@ -1821,34 +1858,10 @@ function PerformanceChartPanel({ mode, symbol, interval, bots, capital, netPnl }
 }
 
 function performanceSeries(mode: "Portfolio" | "Bots" | "Stock", symbol: string, interval: string, bots: BotRuntime[], capital: number, netPnl: number) {
-  if (mode === "Stock") return stockSeries(symbol, interval);
-  const deployed = bots.filter((bot) => bot.enabled).length;
-  const base = mode === "Portfolio" ? Math.max(1, capital + netPnl) : Math.max(1, bots.reduce((sum, bot) => sum + allocationForBot(bot, Math.max(capital, 1)), 0) / Math.max(1, bots.length));
-  const riskBoost = mode === "Bots" ? deployed * 1.8 + 3 : 6;
-  const seed = mode === "Portfolio" ? 17 : 29 + deployed;
-  return Array.from({ length: 20 }, (_, index) => {
-    const wave = Math.sin((index + seed) * .58) * riskBoost + Math.cos((index + seed) * .22) * (riskBoost * .65);
-    const drift = mode === "Portfolio" ? index * Math.max(1, base * .00024) : index * Math.max(1, base * .00018);
-    const open = base + wave + drift;
-    const close = open + Math.sin((index + seed) * .93) * riskBoost * .52;
-    const high = Math.max(open, close) + riskBoost * .42;
-    const low = Math.min(open, close) - riskBoost * .38;
-    return { label: `${9 + Math.floor(index / 4)}:${String((index % 4) * 15).padStart(2, "0")}`, open, close, high, low, volume: 580000 + index * 68000 + deployed * 94000 };
-  });
-}
-
-function stockSeries(symbol: string, interval: string) {
-  const seed = symbol.split("").reduce((sum, char) => sum + char.charCodeAt(0), 0) + Number(interval);
-  const base = symbol === "SPY" ? 746 : symbol === "NVDA" ? 144 : 201;
-  return Array.from({ length: 20 }, (_, index) => {
-    const wave = Math.sin((index + seed) * .72) * 2.4 + Math.cos((index + seed) * .31) * 1.7;
-    const drift = (index - 8) * .12;
-    const open = base + wave + drift;
-    const close = open + Math.sin((index + seed) * 1.18) * 1.65;
-    const high = Math.max(open, close) + 1.1 + ((index + seed) % 3) * .22;
-    const low = Math.min(open, close) - 1.05 - ((index + seed) % 4) * .18;
-    return { label: `${9 + Math.floor(index / 4)}:${String((index % 4) * 15).padStart(2, "0")}`, open, close, high, low, volume: 420000 + (index + 1) * 41200 + seed * 120 };
-  });
+  if (mode === "Stock") return [];
+  const points = capitalSeries(capital, []);
+  if (mode === "Portfolio") return points.map((point, index) => ({ label: point.label, open: index ? points[index - 1].value : point.value, close: point.value, high: Math.max(point.value, index ? points[index - 1].value : point.value), low: Math.min(point.value, index ? points[index - 1].value : point.value), volume: 0 }));
+  return [];
 }
 
 function MiniLineChart({ points }: { points: { label: string; value: number }[] }) {
@@ -1872,7 +1885,6 @@ function EmptyState({ title, body, action, onAction }: { title: string; body: st
 function tradingViewSymbol(symbol: string) {
   const normalized = symbol.toUpperCase();
   if (normalized === "FILING") return "";
-  if (normalized === "SPY") return "AMEX:SPY";
   if (["BTC", "ETH", "SOL"].includes(normalized)) return `BINANCE:${normalized}USDT`;
   return `NASDAQ:${normalized}`;
 }

@@ -4,12 +4,12 @@
 
 Wolfie is an agentic trading intelligence app with two visible modes:
 
-- **Simulated**: uses the user's Wolfie capital amount, acquisition-ladder source states, TradeCostEngine estimates, bot decision frames, risk gates, memory, and self-healing.
+- **Paper**: uses the user's Wolfie capital amount, acquisition-ladder source states, TradeCostEngine estimates, bot decision frames, risk gates, memory, and self-healing.
 - **Live**: shows the required authorized broker/execution setup path. It must not imply brokerage execution until that path is implemented and verified.
 
 ## Signal Console
 
-Signal Console is the primary bot intelligence interface. The old 3D Bot Thought / force graph system is no longer the product direction.
+Signal Console is the primary bot intelligence interface. The legacy force-graph thought view is not part of the normal product surface.
 
 Signal Console must show:
 
@@ -30,6 +30,8 @@ Signal Console must show:
 Do not invent unavailable live data. Do not generate unsourced headlines. Do not bypass login walls, private groups, paywalls, or anti-scraping protections.
 
 When data is unavailable, show a professional state: waiting, delayed, stale, fallback, or cached.
+
+Normal product routes must not depend on fixtures, generated market candles, default tickers, or static confidence. Fixture replay and synthetic generation belong under `/api/dev-test-lab/*`.
 
 ## Trade Economics
 

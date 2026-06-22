@@ -1804,22 +1804,22 @@ input, select {
 
 /* Screenshot-faithful terminal rebuild */
 :root {
-  --mock-bg: #030a12;
-  --mock-panel: rgba(8, 18, 29, .86);
-  --mock-panel-2: rgba(10, 22, 35, .78);
-  --mock-line: rgba(129, 166, 196, .22);
-  --mock-line-strong: rgba(54, 172, 255, .74);
-  --mock-text: #f3f8ff;
-  --mock-muted: #8c9caf;
-  --mock-soft: #b5c3d2;
-  --mock-cyan: #35c7ff;
-  --mock-green: #27d88f;
-  --mock-red: #f0545c;
+  --wolfie-bg: #030a12;
+  --wolfie-panel: rgba(8, 18, 29, .86);
+  --wolfie-panel-2: rgba(10, 22, 35, .78);
+  --wolfie-line: rgba(129, 166, 196, .22);
+  --wolfie-line-strong: rgba(54, 172, 255, .74);
+  --wolfie-text: #f3f8ff;
+  --wolfie-muted: #8c9caf;
+  --wolfie-soft: #b5c3d2;
+  --wolfie-cyan: #35c7ff;
+  --wolfie-green: #27d88f;
+  --wolfie-red: #f0545c;
 }
 
 html,
 body {
-  background: var(--mock-bg);
+  background: var(--wolfie-bg);
 }
 
 .wolf-app {
@@ -1831,16 +1831,16 @@ body {
     radial-gradient(circle at 30% -8%, rgba(47, 161, 214, .16), transparent 33%),
     linear-gradient(180deg, #02070d 0%, #05101a 52%, #030910 100%);
   background-size: 64px 64px, 64px 64px, auto, auto;
-  color: var(--mock-text);
+  color: var(--wolfie-text);
   font-family: Inter, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
 }
 
 .panel {
-  border: 1px solid var(--mock-line);
+  border: 1px solid var(--wolfie-line);
   border-radius: 9px;
   background:
     linear-gradient(180deg, rgba(16, 31, 48, .86), rgba(5, 13, 22, .92)),
-    var(--mock-panel);
+    var(--wolfie-panel);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.05),
     0 18px 48px rgba(0,0,0,.22);
@@ -1927,7 +1927,7 @@ body {
     linear-gradient(90deg, rgba(35, 177, 255, .26), rgba(31, 81, 122, .34)),
     rgba(14, 38, 61, .72);
   color: #eff8ff;
-  box-shadow: inset 3px 0 0 var(--mock-cyan), 0 0 34px rgba(32, 155, 255, .15);
+  box-shadow: inset 3px 0 0 var(--wolfie-cyan), 0 0 34px rgba(32, 155, 255, .15);
 }
 
 .mode-card {
@@ -1981,7 +1981,7 @@ body {
   width: 11px;
   height: 11px;
   border-radius: 50%;
-  background: var(--mock-green);
+  background: var(--wolfie-green);
   box-shadow: 0 0 18px rgba(39, 216, 143, .72);
 }
 
@@ -2035,7 +2035,7 @@ body {
 
 .status-card b {
   grid-column: 2;
-  color: var(--mock-green);
+  color: var(--wolfie-green);
   font-size: 11px;
   text-transform: uppercase;
 }
@@ -2219,7 +2219,7 @@ body {
 
 .metric-card small {
   margin-top: 5px;
-  color: var(--mock-green);
+  color: var(--wolfie-green);
   font-size: 12px;
 }
 
@@ -2259,7 +2259,7 @@ body {
   min-height: 26px;
   border: 0;
   background: transparent;
-  color: var(--mock-cyan);
+  color: var(--wolfie-cyan);
   font-size: 12px;
   box-shadow: none;
 }
@@ -2397,7 +2397,7 @@ body {
 }
 
 .gain {
-  color: var(--mock-green) !important;
+  color: var(--wolfie-green) !important;
 }
 
 .right-stack {
@@ -2618,7 +2618,7 @@ body {
 }
 
 .news-tabs button.active {
-  border-bottom-color: var(--mock-cyan);
+  border-bottom-color: var(--wolfie-cyan);
   color: #7fdcff;
 }
 
@@ -2702,7 +2702,7 @@ body {
 .brief-list b {
   display: block;
   margin-top: 3px;
-  color: var(--mock-green);
+  color: var(--wolfie-green);
   font-weight: 600;
 }
 
@@ -2776,7 +2776,7 @@ body {
 }
 
 .pelosi-head p span {
-  color: var(--mock-green);
+  color: var(--wolfie-green);
   text-transform: uppercase;
 }
 
@@ -2823,7 +2823,7 @@ body {
 }
 
 .pelosi-list button b {
-  color: var(--mock-green);
+  color: var(--wolfie-green);
   font-size: 12px;
 }
 
@@ -2984,8 +2984,8 @@ body {
   border-radius: 9px;
   background:
     linear-gradient(180deg, rgba(16,31,48,.84), rgba(5,13,22,.92)),
-    var(--mock-panel);
-  border-color: var(--mock-line);
+    var(--wolfie-panel);
+  border-color: var(--wolfie-line);
 }
 
 .bot-kpis {
@@ -3355,7 +3355,7 @@ select {
   width: 100%;
   border: 1px solid rgba(129, 166, 196, .2);
   background: rgba(5, 14, 24, .56);
-  color: var(--mock-text);
+  color: var(--wolfie-text);
   border-radius: 8px;
   padding: 12px;
   text-align: left;
@@ -3418,7 +3418,7 @@ select {
 .learning-memory small,
 .self-healing-panel small,
 .source-freshness-panel span {
-  color: var(--mock-muted);
+  color: var(--wolfie-muted);
   line-height: 1.35;
 }
 
@@ -3436,7 +3436,7 @@ select {
   gap: 12px;
   border: 1px solid rgba(129, 166, 196, .2);
   background: rgba(5, 14, 24, .5);
-  color: var(--mock-text);
+  color: var(--wolfie-text);
   border-radius: 8px;
   padding: 12px;
   text-align: left;
@@ -3451,7 +3451,7 @@ select {
 
 .signal-stack em {
   font-style: normal;
-  color: var(--mock-soft);
+  color: var(--wolfie-soft);
   white-space: nowrap;
 }
 
@@ -3486,7 +3486,7 @@ select {
   border-left: 2px solid rgba(53, 199, 255, .55);
   margin: 10px 0 0;
   padding: 6px 0 6px 10px;
-  color: var(--mock-soft);
+  color: var(--wolfie-soft);
 }
 
 @media (max-width: 1100px) {

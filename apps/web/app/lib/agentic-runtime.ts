@@ -1,6 +1,6 @@
 import { estimateTradeCosts, type TradeCostEstimate } from "./fees";
 
-export type SourceFreshnessState = "live" | "delayed" | "stale" | "fallback" | "cached" | "waiting";
+export type SourceFreshnessState = "live" | "delayed" | "stale" | "fallback" | "cached" | "waiting" | "unavailable";
 export type SignalDirection = "bullish" | "bearish" | "neutral";
 export type DecisionState = "ignore" | "watch" | "investigate" | "prepare" | "enter_position" | "reduce_position" | "exit_position" | "block" | "cooldown";
 
@@ -38,7 +38,6 @@ export type BotPreset = {
   learningRules: string[];
   selfHealingRules: string[];
   education: Record<string, string>;
-  targetSymbol: string;
 };
 
 export type RiskGateResult = {
@@ -97,6 +96,11 @@ export type DecisionFrame = {
   memory: BotMemory[];
   selfHealing: SelfHealingAction[];
   sourceFreshness: AcquisitionSource[];
+  unavailableSources: string[];
+  staleSources: string[];
+  fallbackSources: string[];
+  truthConfidence: number;
+  tradeConfidence: number;
 };
 
 export const educationGlossary = {
@@ -122,7 +126,7 @@ export const educationGlossary = {
 };
 
 export const acquisitionLadder: AcquisitionSource[] = [
-  { lane: "market", adapter: "Authorized live provider -> broker data -> public delayed quote/candle -> cached last-known value", cadence: "ticks continuous, candles 1-15s when connected", status: "waiting", lastCheckedAt: null, detail: "No browser-side live provider is assumed; UI labels waiting/cached instead of inventing prices." },
+  { lane: "market", adapter: "Local real-data cache -> official/public sources -> public feeds -> public pages -> optional APIs -> UNKNOWN", cadence: "request-driven", status: "waiting", lastCheckedAt: null, detail: "No symbol has been supplied yet. Wolfie waits for a watchlist, bot configuration, scanner discovery, paper position, or explicit request." },
   { lane: "filings", adapter: "SEC EDGAR submissions/company facts -> parser -> cached reviewed filing", cadence: "1-5m for SEC/company filings", status: "delayed", lastCheckedAt: "2026-06-22T09:40:00-05:00", detail: "Disclosure signals are latency-aware and never treated as real-time copy trades." },
   { lane: "finra", adapter: "FINRA datasets/APIs -> publication cadence cache", cadence: "publication cadence", status: "delayed", lastCheckedAt: "2026-06-22T09:30:00-05:00", detail: "Short and market-structure signals are marked delayed." },
   { lane: "news", adapter: "Licensed/authorized API -> public feeds/RSS/pages where allowed", cadence: "30s-2m where authorized", status: "waiting", lastCheckedAt: null, detail: "No invented headlines are generated when a feed is unavailable." },
@@ -150,7 +154,6 @@ export const botPresets: BotPreset[] = [
     learningRules: ["raise threshold after stale-source losses", "reduce size after execution quality decay"],
     selfHealingRules: ["pause on stale market data", "fallback to cached review when live provider fails"],
     education: educationGlossary,
-    targetSymbol: "SPY"
   },
   {
     id: "surge",
@@ -172,7 +175,6 @@ export const botPresets: BotPreset[] = [
     learningRules: ["downgrade social after false positives", "cool down after churn"],
     selfHealingRules: ["raise threshold when spread widens", "watch-only noisy social signals"],
     education: educationGlossary,
-    targetSymbol: "NVDA"
   },
   {
     id: "compass",
@@ -194,7 +196,6 @@ export const botPresets: BotPreset[] = [
     learningRules: ["track rejected-trade quality", "lower stale news weight"],
     selfHealingRules: ["fallback source after source failure", "request approval for major preset changes"],
     education: educationGlossary,
-    targetSymbol: "AAPL"
   },
   {
     id: "contrarian",
@@ -216,7 +217,6 @@ export const botPresets: BotPreset[] = [
     learningRules: ["record missed reversals", "raise threshold after false fades"],
     selfHealingRules: ["cooldown after confidence collapse", "reduce size after repeated losses"],
     education: educationGlossary,
-    targetSymbol: "GME"
   },
   {
     id: "disclosure",
@@ -238,7 +238,6 @@ export const botPresets: BotPreset[] = [
     learningRules: ["separate thesis quality from disclosure delay", "track avoided stale filing trades"],
     selfHealingRules: ["pause when parser stale", "request approval before mirror-style changes"],
     education: educationGlossary,
-    targetSymbol: "MSFT"
   }
 ];
 
@@ -246,17 +245,19 @@ export function allocationForPreset(preset: BotPreset, capital: number) {
   return preset.allocationMode === "Fixed" ? preset.fixedAllocation : capital * (preset.percentAllocation / 100);
 }
 
-export function buildDecisionFrames(capital: number, nowIso = "2026-06-22T09:42:17-05:00"): DecisionFrame[] {
-  return botPresets.map((preset, index) => buildDecisionFrame(preset, capital, nowIso, index));
+export function buildDecisionFrames(capital: number, symbols: string[] = [], nowIso = "2026-06-22T09:42:17-05:00"): DecisionFrame[] {
+  const uniqueSymbols = Array.from(new Set(symbols.map((symbol) => symbol.trim().toUpperCase()).filter(Boolean)));
+  if (!uniqueSymbols.length) return [];
+  return botPresets.flatMap((preset, index) => uniqueSymbols.slice(0, 3).map((symbol) => buildDecisionFrame(preset, capital, nowIso, index, symbol)));
 }
 
-function buildDecisionFrame(preset: BotPreset, capital: number, nowIso: string, index: number): DecisionFrame {
+function buildDecisionFrame(preset: BotPreset, capital: number, nowIso: string, index: number, symbol: string): DecisionFrame {
   const allocation = allocationForPreset(preset, capital);
   const smallAccount = capital <= 1500;
   const turnoverPenalty = preset.tradeFrequencyLimits.maxTradesPerDay > 4 ? 0.14 : 0.04;
-  const expectedGrossMovePercent = preset.id === "surge" && smallAccount ? 0.18 : preset.id === "disclosure" ? 0.42 : 0.62 + index * 0.08;
-  const price = preset.targetSymbol === "SPY" ? 746 : preset.targetSymbol === "NVDA" ? 144 : preset.targetSymbol === "GME" ? 26 : preset.targetSymbol === "MSFT" ? 472 : 201;
-  const shares = Math.max(1, Math.floor(Math.max(100, allocation * 0.18) / price));
+  const expectedGrossMovePercent = 0;
+  const price = 0;
+  const shares = 0;
   const exitPrice = price * (1 + expectedGrossMovePercent / 100);
   const costEstimate = estimateTradeCosts({
     side: "sell",
@@ -271,17 +272,17 @@ function buildDecisionFrame(preset: BotPreset, capital: number, nowIso: string, 
     holdingDays: preset.id === "surge" ? 1 : 4
   });
   const expectedNetProfit = costEstimate.netPnl;
-  const signals = buildSignals(preset, nowIso, expectedGrossMovePercent, smallAccount);
+  const signals = buildSignals(preset, nowIso, expectedGrossMovePercent, smallAccount, symbol);
   const staleSignals = signals.filter((signal) => signal.freshness === "stale" || signal.freshness === "waiting").map((signal) => `${signal.sourceName}: ${signal.explanation}`);
   const confidence = Math.round(signals.reduce((sum, signal) => sum + signal.confidence * (signal.weight / 100), 0));
-  const netExpectancyPass = expectedNetProfit > Math.max(2, allocation * 0.0015) && costEstimate.feeDragPercent < (smallAccount ? 0.1 : 0.32);
-  const smallAccountProtection = smallAccount && (preset.tradeFrequencyLimits.maxTradesPerDay > 3 || costEstimate.feeDragPercent > 0.08 || turnoverPenalty > 0.1);
+  const netExpectancyPass = false;
+  const smallAccountProtection = smallAccount && (preset.tradeFrequencyLimits.maxTradesPerDay > 3 || turnoverPenalty > 0.1);
   const riskGate: RiskGateResult = {
     status: smallAccountProtection || !netExpectancyPass || staleSignals.length > 1 ? "closed" : staleSignals.length || costEstimate.accountSizeSuitability === "Caution" ? "caution" : "open",
     reasons: [
-      !netExpectancyPass ? "Net expectancy does not clear estimated friction." : "Net expectancy clears estimated friction.",
+      "Net expectancy is unavailable until real quote, spread, volume, and candle inputs are acquired.",
       smallAccountProtection ? "Small-account protection blocks high-churn or low-margin entries." : "Account size is suitable for this turnover profile.",
-      staleSignals.length ? "One or more source lanes are stale, delayed, or waiting." : "Source freshness is acceptable."
+      "Source acquisition has not produced enough evidence for a paper trade."
     ],
     netExpectancyPass,
     smallAccountProtection,
@@ -289,9 +290,9 @@ function buildDecisionFrame(preset: BotPreset, capital: number, nowIso: string, 
   };
   const state: DecisionState = riskGate.status === "closed" ? (smallAccountProtection ? "cooldown" : "block") : confidence >= 74 && riskGate.status === "open" ? "prepare" : "watch";
   return {
-    id: `${preset.id}-${preset.targetSymbol}`,
+    id: `${preset.id}-${symbol}`,
     botId: preset.id,
-    symbol: preset.targetSymbol,
+    symbol,
     observedAt: nowIso,
     state,
     confidence,
@@ -299,7 +300,7 @@ function buildDecisionFrame(preset: BotPreset, capital: number, nowIso: string, 
     expectedNetProfit,
     currentDecision: decisionCopy(preset, state, costEstimate, riskGate),
     rejectedOpportunities: [
-      `Rejected ${preset.targetSymbol} fast entry until spread and slippage leave positive net expectancy.`,
+      `Rejected ${symbol} paper entry until spread and slippage leave positive net expectancy.`,
       `Rejected position expansion without ${preset.confirmationRules[0].toLowerCase()}.`
     ],
     whatChangesMind: [
@@ -332,22 +333,27 @@ function buildDecisionFrame(preset: BotPreset, capital: number, nowIso: string, 
         requiresUserApproval: preset.id === "disclosure"
       }
     ],
-    sourceFreshness: acquisitionLadder
+    sourceFreshness: acquisitionLadder,
+    unavailableSources: ["market consensus", "bid/ask spread", "source-confirmed catalyst"],
+    staleSources: staleSignals,
+    fallbackSources: acquisitionLadder.filter((source) => source.status === "fallback").map((source) => source.lane),
+    truthConfidence: confidence / 100,
+    tradeConfidence: 0
   };
 }
 
-function buildSignals(preset: BotPreset, nowIso: string, expectedGrossMovePercent: number, smallAccount: boolean): SignalEvent[] {
+function buildSignals(preset: BotPreset, nowIso: string, expectedGrossMovePercent: number, smallAccount: boolean, symbol: string): SignalEvent[] {
   const weighted = Object.entries(preset.signalWeights).sort((left, right) => right[1] - left[1]);
   return weighted.map(([source, weight], index) => ({
     id: `${preset.id}-${source}`,
     sourceType: source as SignalEvent["sourceType"],
     sourceName: source === "market" ? "Market/candle ladder" : source === "filing" ? "SEC and disclosure ladder" : source === "execution" ? "TradeCostEngine execution quality" : source === "risk" ? "Risk and capital gate" : source === "social" ? "Public social uncertainty filter" : "Authorized news/public feed ladder",
     sourceUrl: source === "filing" ? "https://www.sec.gov/edgar/search/" : source === "risk" || source === "execution" ? undefined : "https://www.finra.org/rules-guidance/guidance/trading-activity-fee",
-    symbol: preset.targetSymbol,
+    symbol,
     observedAt: nowIso,
-    freshness: source === "market" || source === "news" ? "waiting" : source === "filing" || source === "finra" ? "delayed" : source === "social" ? "fallback" : "cached",
-    direction: smallAccount && source === "risk" ? "bearish" : expectedGrossMovePercent > 0.45 && index < 2 ? "bullish" : source === "execution" ? "neutral" : "neutral",
-    confidence: Math.max(28, Math.min(92, 58 + weight - index * 3 - (smallAccount && source !== "risk" ? 9 : 0))),
+    freshness: source === "market" || source === "news" ? "waiting" : source === "filing" || source === "finra" ? "delayed" : source === "social" ? "fallback" : "unavailable",
+    direction: smallAccount && source === "risk" ? "bearish" : "neutral",
+    confidence: Math.max(18, Math.min(62, 38 + weight - index * 3 - (smallAccount && source !== "risk" ? 9 : 0))),
     weight,
     explanation: source === "execution"
       ? "Estimated spread, slippage, and fees are included before any trade state can advance."

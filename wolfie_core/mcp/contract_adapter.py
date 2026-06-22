@@ -11,13 +11,13 @@ class ModeNotEnabled(NotImplementedError):
 
 
 class MCPContractAdapter:
-    SUPPORTED_MODE = "SIMULATED_LIVE_MCP_LOCAL"
-    FUTURE_MODES = {"ROBINHOOD_MCP_PAPER_ONLY", "ROBINHOOD_LIVE_APPROVAL"}
+    SUPPORTED_MODES = {"LIVE_AGENT_BETA_PAPER_ONLY", "SIMULATED_LIVE_MCP_LOCAL"}
+    FUTURE_MODES = {"ROBINHOOD_LIVE_APPROVAL"}
 
     def __init__(self, mode: str = ENVIRONMENT, server: RobinhoodSimMCPServer | None = None):
         if mode in self.FUTURE_MODES:
             raise ModeNotEnabled(f"{mode} is a future-only disabled stub. No Robinhood connection exists.")
-        if mode != self.SUPPORTED_MODE:
+        if mode not in self.SUPPORTED_MODES:
             raise ModeNotEnabled(f"{mode} is not enabled.")
         self.mode = mode
         self.server = server or RobinhoodSimMCPServer()

@@ -17,7 +17,19 @@ class ExecutionPlanner:
 
     def create_plan(self, signal: Dict[str, Any], order_type: str, limit_price: float, quantity: float, stop_price: float | None, take_profit_price: float | None = None) -> Dict[str, Any]:
         side = signal.get("side", "BUY")
-        symbol = signal.get("symbol", "AAPL")
+        symbol = signal.get("symbol")
+        if not symbol:
+            return {
+                "plan_id": new_id("plan"),
+                "signal_id": signal.get("signal_id"),
+                "status": "rejected",
+                "submission_status": "missing_symbol",
+                "risk_result": {"passed": False, "reason_code": "missing_symbol"},
+                "live_order_submitted": False,
+                "execution_engine": EXECUTION_ENGINE,
+                "source_mode": SOURCE_MODE,
+                "provenance": provenance("ExecutionPlanner"),
+            }
         cost = self.cost_model.preview(symbol, side, limit_price, take_profit_price or limit_price, quantity)
         risk = self.risk_manager.check(
             {

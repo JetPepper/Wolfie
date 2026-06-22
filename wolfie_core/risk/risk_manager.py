@@ -25,7 +25,7 @@ class RiskManager:
             "max_trades_per_day": max_trades_per_day,
             "max_symbol_exposure": max_symbol_exposure,
             "max_sector_exposure": max_sector_exposure,
-            "allowed_symbols": allowed_symbols or ["AAPL"],
+            "allowed_symbols": allowed_symbols or [],
             "no_market_orders": True,
             "no_options": True,
             "no_margin": True,
@@ -43,7 +43,7 @@ class RiskManager:
         failed = []
         reason = None
 
-        if candidate.get("symbol") and candidate["symbol"] not in self.settings["allowed_symbols"]:
+        if self.settings["allowed_symbols"] and candidate.get("symbol") and candidate["symbol"] not in self.settings["allowed_symbols"]:
             reason = "symbol_not_allowed"
         elif candidate.get("order_type") == "market" and self.settings["no_market_orders"]:
             reason = "market_orders_disabled"
@@ -77,4 +77,4 @@ class RiskManager:
         return self.get_settings()
 
     def get_settings(self) -> Dict[str, Any]:
-        return {"status": "simulated", "settings": dict(self.settings), "provenance": provenance("RiskManager")}
+        return {"status": "PAPER_ONLY_EXECUTION", "settings": dict(self.settings), "provenance": provenance("RiskManager")}

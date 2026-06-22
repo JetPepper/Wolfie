@@ -6,7 +6,7 @@ Implement and verify Wolfie's Agentic Bot Runtime, Signal Console, and TradeCost
 
 ## Required Workstreams
 
-1. Replace old Bot Thought / 3D / force graph primary UI with Signal Console.
+1. Replace old legacy bot-thought / 3D / force graph primary UI with Signal Console.
 2. Centralize fee and friction math in TradeCostEngine.
 3. Add domain objects for signals, presets, decision frames, risk gates, memory, and self-healing.
 4. Render decision frames from bot presets and acquisition-ladder source freshness.

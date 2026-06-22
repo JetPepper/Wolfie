@@ -16,7 +16,7 @@ The entire app should match the dashboard theme:
 
 ## Signal Console
 
-Signal Console replaces the prior 3D Bot Thought direction.
+Signal Console replaces the prior legacy bot-thought direction.
 
 Required layout:
 
@@ -40,7 +40,7 @@ Dashboard is the operating view:
 - metrics update from starting capital, allocations, fees, and stored activity
 - decision ledger opens a decision frame
 - source panels use acquisition-ladder freshness labels
-- performance chart controls update visible state
+- performance chart controls update visible state only when source-backed symbols or stored paper activity exist
 
 There should be no person-level disclosure card on the dashboard unless a user opens a profile.
 
@@ -70,6 +70,6 @@ Before reporting completion:
 - run visual tests
 - inspect desktop and mobile screenshots
 - verify Signal Console renders
-- verify old 3D Bot Thought is not the primary interface
+- verify the legacy thought surface is not the primary interface
 - verify no forbidden visible strings appear
-- keep localhost running and provide the review URL
+- verify GitHub Pages or the branch/PR deployment URL is inspectable

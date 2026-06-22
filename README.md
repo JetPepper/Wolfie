@@ -1,14 +1,14 @@
 # Wolfie Trading Bot
 
-Wolfie is a localhost-first agentic trading intelligence app. The current product direction is **Agentic Bot Runtime + Signal Console + TradeCostEngine**.
+Wolfie is a source-backed live-agent beta agentic trading intelligence app. The current product direction is **Agentic Bot Runtime + Signal Console + TradeCostEngine**.
 
-The app does not claim live brokerage execution. Simulated mode uses the user's Wolfie capital amount for allocation, risk, trade economics, and bot decision review. Live mode is a professional setup state until authorized broker/execution paths, disclosures, account authorization, and execution audit logs are implemented.
+The app does not claim live brokerage execution. Paper mode uses the user's Wolfie capital amount for allocation, risk, trade economics, and bot decision review. Live mode is a professional setup state until authorized broker/execution paths, disclosures, account authorization, and execution audit logs are implemented.
 
 ## Active Product Surface
 
-- Dashboard: capital, available allocation, decision ledger, bot/source status, and portfolio/bot/stock performance chart.
+- Dashboard: capital, available allocation, decision ledger, bot/source status, and empty states until source-backed symbols or paper activity exist.
 - Bots: primary and specialized bot presets, deployment controls, editable allocation/risk/source/rule fields, disclosure intelligence workspaces, and custom bot builder.
-- Signal Console: the primary bot-intelligence interface replacing the old 3D Bot Thought system.
+- Signal Console: the primary bot-intelligence interface replacing the old legacy bot-thought system.
 - Activity: stored trade/activity audit surface.
 - Settings: starting capital, provider/source status, mode controls, sound, reset, and bot defaults.
 
@@ -16,7 +16,7 @@ The app does not claim live brokerage execution. Simulated mode uses the user's 
 
 The frontend now models the required runtime path:
 
-`Data Acquisition Layer -> Source Adapters -> Acquisition Ladder -> Normalization -> Signal Store -> Indicator Engine -> Bot Preset Engine -> Bot Decision Engine -> TradeCostEngine -> Risk Gate -> Execution/Simulation Engine -> Bot Memory/Learning Engine -> Self-Healing Engine -> Signal Console UI`
+`Data Acquisition Layer -> Source Registry -> Source Discovery -> Source Validation -> Claim Extraction -> Corroboration -> Market Consensus -> Bot Preset Engine -> Bot Decision Engine -> TradeCostEngine -> Risk Gate -> Paper-Only Execution Gate -> Bot Memory/Learning Engine -> Self-Healing Engine -> Signal Console UI`
 
 Implemented TypeScript domain objects live in `apps/web/app/lib/agentic-runtime.ts`:
 
@@ -57,7 +57,7 @@ The acquisition ladder is documented in code and UI:
 - FINRA/market structure: FINRA datasets/APIs -> cached delayed publication labels.
 - News/social: licensed or authorized APIs and allowed public sources only. No login walls, paywalls, private groups, or bypass behavior.
 
-When no production source is connected, the app labels the state honestly instead of generating live claims.
+When no production source is connected, the app labels the state honestly instead of generating live claims. Fixture replay and synthetic data are isolated to `/api/dev-test-lab/*`.
 
 ## Verification
 
@@ -76,5 +76,5 @@ corepack pnpm --dir apps/web dev
 Run locally at:
 
 ```text
-http://localhost:3000/
+https://jetpepper.github.io/Wolfie/
 ```
