@@ -1,3 +1,4 @@
+export * from "./account-model";
 export * from "./broker-connector";
 export * from "./code-protection";
 export * from "./data-classification";

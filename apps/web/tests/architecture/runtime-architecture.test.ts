@@ -5,16 +5,23 @@ import { join, resolve } from "node:path";
 import {
   StubLocalBrokerConnector,
   assertCloudPayloadSafe,
+  assertAccountRecordSafe,
   assertFullRuntimeAllowed,
+  createLocalRuntimeIdentity,
   createDevFullWolfieEntitlement,
   createDevOwnerRecoveryAssertion,
+  evaluateCommercialAccountAccess,
   evaluateExecutionGuard,
   evaluateOwnerRecovery,
   getWolfieAccessState,
   inspectCloudPayloadSafety,
   validateEntitlementToken,
+  type DeviceActivationRecord,
   wolfieCloudRequest,
+  type License,
   type EntitlementValidationResult,
+  type UserAccount,
+  type WolfieAccount,
   type SignedEntitlementToken,
 } from "../../app/lib/runtime";
 
@@ -72,6 +79,44 @@ function baseGuardInput(entitlement = validEntitlement()) {
   };
 }
 
+function accountFixture() {
+  const userAccount: UserAccount = {
+    id: "user_1",
+    email: "operator@example.com",
+    displayName: "Operator",
+    role: "USER",
+    createdAt: now.toISOString(),
+    status: "active",
+  };
+  const wolfieAccount: WolfieAccount = {
+    accountId: "acct_1",
+    ownerUserId: userAccount.id,
+    billingCustomerId: "billing_placeholder",
+    subscriptionStatus: "active",
+    licenseStatus: "active",
+    createdAt: now.toISOString(),
+  };
+  const license: License = {
+    licenseId: "lic_1",
+    accountId: wolfieAccount.accountId,
+    status: "active",
+    accessLevel: "FULL_WOLFIE",
+    validFrom: "2026-01-01T00:00:00.000Z",
+    validUntil: "2026-12-31T00:00:00.000Z",
+    maxDevices: 3,
+  };
+  const deviceActivation: DeviceActivationRecord = {
+    deviceIdHash,
+    accountId: wolfieAccount.accountId,
+    licenseId: license.licenseId,
+    activatedAt: now.toISOString(),
+    lastSeenAt: now.toISOString(),
+    status: "active",
+    deviceLabel: "Local test device",
+  };
+  return { userAccount, wolfieAccount, license, deviceActivation };
+}
+
 test("pins local explore mode requires no login", () => {
   assert.equal(getWolfieAccessState({ entitlement: invalidEntitlement, ownerRecovery: { allowed: false, reasons: [], userFacingExplanation: "" }, wantsFullRuntime: false }), "LOCAL_EXPLORE");
 });
@@ -97,6 +142,54 @@ test("pins no tiered premium module model exists", () => {
 
 test("pins all or nothing entitlement model", () => {
   assert.equal(validEntitlement().entitlement?.accessLevel, "FULL_WOLFIE");
+});
+
+test("pins commercial account foundation models", () => {
+  const { userAccount, wolfieAccount, license, deviceActivation } = accountFixture();
+  assert.equal(userAccount.id, "user_1");
+  assert.equal(wolfieAccount.accountId, "acct_1");
+  assert.equal(license.accessLevel, "FULL_WOLFIE");
+  assert.equal(deviceActivation.deviceIdHash, deviceIdHash);
+});
+
+test("pins local explore uses local runtime identity only", () => {
+  const localRuntimeIdentity = createLocalRuntimeIdentity("install_1");
+  assert.deepEqual(localRuntimeIdentity, { localInstallId: "install_1", localOperatorLabel: "Local Operator", accessState: "LOCAL_EXPLORE" });
+  const result = evaluateCommercialAccountAccess({ localRuntimeIdentity, entitlement: invalidEntitlement });
+  assert.equal(result.accessState, "LOCAL_EXPLORE");
+});
+
+test("pins full wolfie requires account license device and entitlement", () => {
+  const fixture = accountFixture();
+  const localRuntimeIdentity = { ...createLocalRuntimeIdentity("install_1"), activeAccountId: fixture.wolfieAccount.accountId, activeLicenseId: fixture.license.licenseId, activeDeviceIdHash: fixture.deviceActivation.deviceIdHash };
+  const result = evaluateCommercialAccountAccess({ ...fixture, localRuntimeIdentity, entitlement: validEntitlement() });
+  assert.equal(result.allowed, true);
+  assert.equal(evaluateCommercialAccountAccess({ ...fixture, license: undefined, localRuntimeIdentity, entitlement: validEntitlement() }).allowed, false);
+  assert.equal(evaluateCommercialAccountAccess({ ...fixture, deviceActivation: undefined, localRuntimeIdentity, entitlement: validEntitlement() }).allowed, false);
+});
+
+test("rejects trading fields in account records", () => {
+  const { userAccount } = accountFixture();
+  assert.throws(() => assertAccountRecordSafe({ ...userAccount, trades: [] } as never));
+});
+
+test("rejects trading fields in license records", () => {
+  const { license } = accountFixture();
+  assert.throws(() => assertAccountRecordSafe({ ...license, positions: [] } as never));
+});
+
+test("rejects trading fields in device activation records", () => {
+  const { deviceActivation } = accountFixture();
+  assert.throws(() => assertAccountRecordSafe({ ...deviceActivation, broker: "never" } as never));
+});
+
+test("pins all or nothing account access model", () => {
+  const runtimeTypes = readFileSync(resolve(process.cwd(), "app/lib/runtime/runtime-types.ts"), "utf8");
+  assert.match(runtimeTypes, /LOCAL_EXPLORE/);
+  assert.match(runtimeTypes, /FULL_LICENSED/);
+  assert.match(runtimeTypes, /OWNER_RECOVERY_DEV/);
+  assert.match(runtimeTypes, /BLOCKED/);
+  assert.equal(/FREE|PRO|PREMIUM|TIER/.test(runtimeTypes), false);
 });
 
 test("pins master dev owner access in development only", () => {
