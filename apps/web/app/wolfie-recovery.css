@@ -1,0 +1,630 @@
+/* Wolfie UI Recovery Pass
+   Purpose: correct the Codex-disconnected visual regression without touching source-of-truth behavior.
+   This file is loaded after globals.css and only tightens layout, hierarchy, and premium command-center polish.
+*/
+
+:root {
+  --side: 248px;
+  --right: 244px;
+  --bottom: 58px;
+  --wolfie-ink: #f7fbff;
+  --wolfie-glass: rgba(8, 14, 24, 0.72);
+  --wolfie-glass-strong: rgba(12, 19, 31, 0.88);
+  --wolfie-edge: rgba(175, 203, 255, 0.16);
+  --wolfie-edge-hot: rgba(132, 255, 202, 0.34);
+}
+
+html, body {
+  background: #02050b;
+}
+
+.wolf-app {
+  padding: 22px calc(var(--right) + 24px) 74px calc(var(--side) + 24px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at 18% 6%, rgba(156, 126, 255, 0.18), transparent 32%),
+    radial-gradient(circle at 80% 12%, rgba(68, 233, 188, 0.11), transparent 29%),
+    radial-gradient(circle at 54% 78%, rgba(51, 112, 255, 0.10), transparent 35%),
+    linear-gradient(145deg, #030610 0%, #07101b 46%, #02050b 100%);
+}
+
+.wolf-app::before {
+  opacity: 0.18;
+  background-size: 110px 110px, 190px 190px;
+}
+
+.wolf-app::after {
+  opacity: 0.10;
+}
+
+.metal-panel {
+  border-color: rgba(199, 219, 255, 0.13);
+  background:
+    linear-gradient(138deg, rgba(255,255,255,.10), rgba(255,255,255,.026) 34%, rgba(80, 157, 255, .035)),
+    linear-gradient(180deg, rgba(18, 27, 43, .86), rgba(3, 7, 15, .78));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.13),
+    inset 0 -1px 0 rgba(0,0,0,.55),
+    0 18px 55px rgba(0,0,0,.40),
+    0 0 0 1px rgba(91, 131, 255, .025);
+}
+
+.app-sidebar {
+  top: 14px;
+  bottom: 48px;
+  left: 14px;
+  width: calc(var(--side) - 28px);
+  padding: 18px;
+  border-radius: 20px;
+  gap: 17px;
+  overflow: hidden;
+}
+
+.brand-mark {
+  min-height: 78px;
+  gap: 11px;
+  padding: 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 16px;
+  background: radial-gradient(circle at 30% 18%, rgba(255,255,255,.11), transparent 42%), rgba(255,255,255,.035);
+}
+
+.brand-mark img {
+  width: 52px;
+  height: 58px;
+  border-radius: 12px;
+}
+
+.brand-mark b {
+  font-size: 16px;
+  letter-spacing: .08em;
+}
+
+.brand-mark small {
+  font-size: 9px;
+  letter-spacing: .22em;
+}
+
+.side-nav-list {
+  gap: 8px;
+}
+
+.side-nav-list button {
+  min-height: 46px;
+  padding: 0 13px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 760;
+  letter-spacing: .01em;
+}
+
+.side-nav-list button:first-child {
+  font-size: 0;
+}
+
+.side-nav-list button:first-child::after {
+  content: "Command";
+  font-size: 13px;
+}
+
+.side-nav-list button.active {
+  border-color: rgba(151, 120, 255, .52);
+  background:
+    linear-gradient(135deg, rgba(115, 83, 255, .30), rgba(48, 220, 183, .10)),
+    linear-gradient(180deg, rgba(255,255,255,.095), rgba(255,255,255,.024));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 14px 34px rgba(85, 64, 198, .24);
+}
+
+.trading-mode-card {
+  padding-top: 14px;
+}
+
+.selected-bot-mini {
+  grid-template-columns: 48px 1fr;
+  padding: 10px;
+  border-radius: 14px;
+}
+
+.stage {
+  min-height: auto;
+}
+
+.dashboard-stage {
+  gap: 16px;
+}
+
+.dashboard-header {
+  grid-template-columns: minmax(0, 1fr) minmax(315px, 410px);
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.dashboard-header h1 {
+  max-width: 720px;
+  font-size: clamp(42px, 4.4vw, 62px);
+  line-height: .94;
+  letter-spacing: -.045em;
+}
+
+.dashboard-header p {
+  margin: 10px 0 0;
+  max-width: 570px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.header-bot-card {
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  padding: 12px;
+  border-radius: 18px;
+}
+
+.header-bot-card button,
+.section-head button,
+.opportunity-actions button {
+  padding: 9px 12px;
+  border-radius: 11px;
+  font-size: 12px;
+}
+
+.overview-grid {
+  grid-template-columns: minmax(0, 1.08fr) minmax(260px, .72fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.metric-board,
+.next-opportunity,
+.thought-preview,
+.activity-panel,
+.bot-deep-panel,
+.politician-bot-panel,
+.bots-hero,
+.wide-panel,
+.big-stat,
+.settings-panel {
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.section-head {
+  margin-bottom: 13px;
+}
+
+.micro-label {
+  margin-bottom: 9px;
+  font-size: 10px;
+  letter-spacing: .18em;
+}
+
+.dashboard-card-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.dashboard-card {
+  min-height: 112px;
+  padding: 16px;
+  border-radius: 15px;
+  gap: 7px;
+  align-content: start;
+}
+
+.dashboard-card span {
+  font-size: 12px;
+  color: #b9c8d8;
+}
+
+.dashboard-card b,
+.big-stat h2 {
+  font-size: clamp(22px, 2vw, 32px);
+  line-height: 1;
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.dashboard-card small {
+  font-size: 11px;
+}
+
+.next-opportunity {
+  min-height: 294px;
+}
+
+.opportunity-body {
+  gap: 12px;
+}
+
+.opportunity-body h2 {
+  font-size: clamp(30px, 3.2vw, 44px);
+}
+
+.opportunity-body p {
+  font-size: 13px;
+  line-height: 1.42;
+}
+
+.confidence-badge {
+  padding: 8px 11px;
+}
+
+.confidence-badge b {
+  font-size: 28px;
+}
+
+.thought-preview {
+  grid-column: 1 / -1;
+}
+
+.thought-preview .thought-field {
+  min-height: 410px;
+}
+
+.activity-panel {
+  min-height: 294px;
+}
+
+.right-rail {
+  top: 14px;
+  bottom: 48px;
+  right: 14px;
+  width: calc(var(--right) - 24px);
+  grid-template-rows: minmax(0, 1fr) 202px;
+  gap: 10px;
+}
+
+.selected-panel,
+.navigator-panel {
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.selected-panel h2 {
+  font-size: 19px;
+  line-height: 1.05;
+}
+
+.selected-panel p,
+.education-copy p,
+.factor-list li,
+.selected-panel small {
+  font-size: 12px;
+  line-height: 1.38;
+}
+
+.education-copy {
+  gap: 7px;
+  margin: 9px 0 12px;
+}
+
+.education-copy p {
+  padding: 9px 10px;
+}
+
+.confidence-row {
+  gap: 9px;
+  margin: 14px 0;
+  padding-bottom: 12px;
+}
+
+.factor-list {
+  margin-bottom: 14px;
+}
+
+.mini-cube {
+  height: 132px;
+  margin-top: 12px;
+}
+
+.navigator-actions button {
+  padding: 8px;
+  font-size: 11px;
+}
+
+.thought-field {
+  min-height: 610px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(150, 190, 255, .18), transparent 14%),
+    radial-gradient(circle at 30% 28%, rgba(67, 255, 166, .16), transparent 18%),
+    radial-gradient(circle at 77% 62%, rgba(255, 63, 95, .12), transparent 18%),
+    linear-gradient(160deg, rgba(6,10,18,.72), rgba(3,6,12,.92));
+}
+
+.thought-field::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  z-index: 0;
+  border-radius: 18px;
+  background-image:
+    linear-gradient(rgba(130, 184, 255, .075) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(130, 184, 255, .06) 1px, transparent 1px);
+  background-size: 42px 42px;
+  transform: perspective(700px) rotateX(58deg) scale(1.12);
+  transform-origin: 50% 72%;
+  opacity: .42;
+  pointer-events: none;
+}
+
+.three-stage {
+  z-index: 1;
+  opacity: .92;
+}
+
+.alpha-core {
+  width: clamp(88px, 7vw, 118px);
+  height: clamp(88px, 7vw, 118px);
+  z-index: 4;
+}
+
+.alpha-core span {
+  bottom: -22px;
+  font-size: 10px;
+}
+
+.thought-node {
+  z-index: 5;
+  backdrop-filter: blur(8px);
+}
+
+.thought-node.xl { width: 104px; height: 104px; }
+.thought-node.lg { width: 90px; height: 90px; }
+.thought-node.md { width: 78px; height: 78px; }
+.thought-node.sm { width: 64px; height: 64px; }
+
+.thought-node span {
+  font-size: clamp(15px, 1.15vw, 21px);
+}
+
+.thought-node small {
+  font-size: 11px;
+}
+
+.thought-node .stock-logo {
+  top: 9px;
+  width: 18px;
+  height: 18px;
+}
+
+.thought-node em {
+  min-width: 68px;
+  max-width: 90px;
+  padding: 5px 7px;
+  font-size: 9px;
+}
+
+.thought-node .s0 { left: -78px; top: -13px; }
+.thought-node .s1 { right: -84px; top: -2px; }
+.thought-node .s2 { left: -66px; bottom: -20px; }
+.thought-node .s3 { right: -72px; bottom: -20px; }
+
+.bots-dashboard {
+  gap: 14px;
+}
+
+.bots-hero {
+  min-height: 132px;
+}
+
+.bots-hero h2,
+.view-grid h1 {
+  font-size: clamp(30px, 3.2vw, 54px);
+  line-height: .96;
+}
+
+.primary-bot-grid,
+.micro-bot-grid,
+.bot-character-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.bot-profile-card {
+  min-height: 286px;
+  padding: 17px;
+  border-radius: 18px;
+}
+
+.bot-profile-card h2,
+.bot-deep-panel h2 {
+  font-size: 22px;
+}
+
+.bot-profile-card p,
+.bot-deep-panel p,
+.disclosure-note {
+  font-size: 12px;
+}
+
+.bot-deep-panel {
+  grid-template-columns: 76px minmax(0, .8fr) minmax(0, 1fr);
+}
+
+.bot-character {
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
+}
+
+.bot-eye { top: 20px; }
+.bot-eye.left { left: 18px; }
+.bot-eye.right { right: 18px; }
+
+.view-grid {
+  gap: 14px;
+}
+
+.wide-panel .thought-field {
+  min-height: 560px;
+}
+
+.signal-list button {
+  grid-template-columns: minmax(150px, .8fr) minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.activity-list button {
+  border-color: rgba(190, 214, 255, .11);
+}
+
+.bottom-console {
+  left: calc(var(--side) + 24px);
+  right: calc(var(--right) + 24px);
+  bottom: 42px;
+  grid-template-columns: minmax(220px, 1fr) minmax(280px, .78fr) minmax(320px, .9fr);
+  gap: 12px;
+}
+
+.timeline {
+  height: 44px;
+}
+
+.control-dock,
+.time-scrub {
+  height: 50px;
+}
+
+.ticker-rail {
+  height: 32px;
+  z-index: 40;
+  background: rgba(2, 5, 12, .96);
+  box-shadow: 0 -12px 36px rgba(0,0,0,.42);
+}
+
+.ticker-rail button {
+  padding: 5px 12px;
+  font-size: 11px;
+}
+
+.drawer-backdrop {
+  z-index: 70;
+}
+
+.detail-drawer {
+  width: min(460px, 100%);
+  border-radius: 18px 0 0 18px;
+}
+
+@media (max-width: 1440px) {
+  :root {
+    --side: 230px;
+    --right: 226px;
+  }
+
+  .wolf-app {
+    padding-left: calc(var(--side) + 20px);
+    padding-right: calc(var(--right) + 20px);
+  }
+
+  .dashboard-header h1 {
+    font-size: clamp(38px, 4vw, 54px);
+  }
+
+  .dashboard-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboard-card {
+    min-height: 104px;
+    padding: 14px;
+  }
+
+  .dashboard-card b {
+    font-size: clamp(20px, 1.72vw, 28px);
+  }
+
+  .thought-preview .thought-field {
+    min-height: 390px;
+  }
+
+  .thought-node em {
+    transform: scale(.88);
+  }
+}
+
+@media (max-width: 1280px) {
+  :root {
+    --side: 218px;
+    --right: 0px;
+  }
+
+  .wolf-app {
+    padding-right: 20px;
+  }
+
+  .right-rail {
+    position: static;
+    width: auto;
+    grid-template-columns: minmax(0, 1fr) 220px;
+    grid-template-rows: auto;
+    margin-top: 16px;
+  }
+
+  .overview-grid,
+  .dashboard-header {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .bottom-console {
+    left: calc(var(--side) + 18px);
+    right: 18px;
+    grid-template-columns: 1fr;
+  }
+
+  .timeline,
+  .time-scrub {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .wolf-app {
+    padding: 14px 14px 84px;
+    overflow: visible;
+  }
+
+  .app-sidebar {
+    position: static;
+    width: auto;
+    margin-bottom: 14px;
+    overflow: visible;
+  }
+
+  .brand-mark {
+    min-height: 64px;
+  }
+
+  .side-nav-list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .dashboard-card-grid,
+  .overview-grid,
+  .primary-bot-grid,
+  .micro-bot-grid,
+  .bot-character-grid,
+  .opportunity-actions,
+  .right-rail {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-card b {
+    font-size: clamp(22px, 7vw, 32px);
+  }
+
+  .thought-node em {
+    display: none;
+  }
+
+  .bottom-console {
+    left: 12px;
+    right: 12px;
+  }
+}
