@@ -17,7 +17,7 @@
     "test:architecture": "corepack pnpm typecheck && corepack pnpm lint && corepack pnpm test:architecture:unit && corepack pnpm test:architecture:playwright && corepack pnpm scan:forbidden-visible && corepack pnpm scan:private-keys && corepack pnpm scan:cloud-fetch"
   },
   "dependencies": {
-    "next": "15.1.4",
+    "next": "16.2.9",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },
@@ -28,7 +28,7 @@
     "@types/react-dom": "19.0.2",
     "autoprefixer": "10.4.20",
     "eslint": "^8.57.1",
-    "eslint-config-next": "15.1.4",
+    "eslint-config-next": "16.2.9",
     "postcss": "8.4.49",
     "tailwindcss": "3.4.17",
     "typescript": "5.7.2"

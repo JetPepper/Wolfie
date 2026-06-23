@@ -6,9 +6,6 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   output: "export",
   trailingSlash: true,
-  devIndicators: {
-    buildActivity: false
-  },
   images: {
     unoptimized: true
   },
