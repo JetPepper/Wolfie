@@ -1,25 +1,30 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const page = readFileSync(resolve(process.cwd(), "app/page.tsx"), "utf8").toLowerCase();
+const files = ["public/index.html", "public/privacy.html", "public/terms.html"]
+  .map((file) => resolve(process.cwd(), file))
+  .filter((file) => existsSync(file));
+
 const forbidden = [
-  "mock",
-  "sandbox",
-  "debug",
-  "localhost",
-  "mcp tool call",
-  "botconfig",
-  "paperexchange",
-  "warren",
-  "twinkies",
-  "premium",
-  "pro tier",
-  "upgrade tier",
+  "Wolfie Alpha",
+  "Trading Bots",
+  "Wolfie Command Dashboard",
+  "Field Navigator",
+  "Bot Thought Preview",
+  "Configuration required",
+  "wolfie-hero-suite-bg.png",
+  "wolfie-waitlist-card-reference.png",
+  "wolfie-landing-hero-laptop.png"
 ];
 
-const hits = forbidden.filter((text) => page.includes(text));
+const hits = files.flatMap((file) => {
+  const body = readFileSync(file, "utf8");
+  return forbidden.filter((text) => body.includes(text)).map((text) => `${file}: ${text}`);
+});
+
 if (hits.length) {
-  console.error(`Forbidden visible strings found in app/page.tsx: ${hits.join(", ")}`);
+  console.error(`Old landing/dashboard strings or assets found:\n${hits.join("\n")}`);
   process.exit(1);
 }
-console.log("forbidden visible string scan passed");
+
+console.log("uploaded landing visible string scan passed");

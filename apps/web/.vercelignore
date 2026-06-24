@@ -1,0 +1,7 @@
+node_modules
+.next
+out
+.architecture-build
+test-results
+artifacts
+*.log

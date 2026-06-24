@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Wolfie Trading",
-  description: "The first commercial Agentic Trade platform specifically for RobinHood Trading."
+  title: "Wolfie",
+  description: "Autonomous AI trading agents for Robinhood."
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
