@@ -17,6 +17,7 @@
     "test:architecture": "corepack pnpm typecheck && corepack pnpm lint && corepack pnpm test:architecture:unit && corepack pnpm test:architecture:playwright && corepack pnpm scan:forbidden-visible && corepack pnpm scan:private-keys && corepack pnpm scan:cloud-fetch"
   },
   "dependencies": {
+    "@vercel/blob": "^2.4.1",
     "next": "16.2.9",
     "react": "19.0.0",
     "react-dom": "19.0.0",

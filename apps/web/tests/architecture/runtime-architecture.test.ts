@@ -313,7 +313,9 @@ test("production fails closed for live runtime when token verification unavailab
 
 function collectFiles(root: string, include: (file: string) => boolean = () => true): string[] {
   const files: string[] = [];
+  const ignoredDirectories = new Set([".git", ".next", ".architecture-build", "node_modules", "out", "test-results"]);
   for (const entry of readdirSync(root)) {
+    if (ignoredDirectories.has(entry)) continue;
     const full = join(root, entry);
     const stat = statSync(full);
     if (stat.isDirectory()) files.push(...collectFiles(full, include));

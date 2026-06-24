@@ -77,6 +77,10 @@ test("waitlist validates, submits, writes XLSX, updates existing email, and trig
   expect(payload.xlsx.filename).toBe("wolfie-playwright-waitlist.xlsx");
   expect(payload.xlsx.rowCount).toBe(1);
   expect(payload.xlsx.updatedExisting).toBe(false);
+  expect(payload.storage).toMatchObject({
+    persistent: false,
+    provider: "none"
+  });
   expect(payload.email.sent).toBe(true);
   expect(payload.email.provider).toBe("file");
   await expect(page.locator("#wlSuccess")).toHaveClass(/show/);
@@ -112,6 +116,10 @@ test("waitlist validates, submits, writes XLSX, updates existing email, and trig
   const updatePayload = await updateResponse.json();
   expect(updatePayload.xlsx.rowCount).toBe(1);
   expect(updatePayload.xlsx.updatedExisting).toBe(true);
+  expect(updatePayload.storage).toMatchObject({
+    persistent: false,
+    provider: "none"
+  });
 
   rows = readWorkbookRows();
   expect(rows).toHaveLength(1);

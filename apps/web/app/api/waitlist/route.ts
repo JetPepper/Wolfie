@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { NextResponse } from "next/server";
@@ -44,6 +45,15 @@ type EmailResult =
   | { sent: true; provider: "resend" | "file"; destination: string }
   | { sent: false; provider: "resend"; error: string };
 
+type StorageResult =
+  | {
+      persistent: true;
+      provider: "vercel-blob";
+      submissionPathname: string;
+      exportPathname: string;
+    }
+  | { persistent: false; provider: "none"; reason: string };
+
 export async function POST(request: Request) {
   let raw: RawSubmission;
 
@@ -68,6 +78,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: `Waitlist XLSX write failed: ${message}` }, { status: 500 });
   }
 
+  let storage: StorageResult;
+  try {
+    storage = await persistWaitlistSubmission(submission, workbookResult);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown persistent storage error";
+    console.error("Waitlist durable storage failed", message);
+    storage = { persistent: false, provider: "none", reason: message };
+  }
+
+  if (!storage.persistent && process.env.WOLFIE_WAITLIST_DURABLE_REQUIRED === "true") {
+    return NextResponse.json({ error: `Waitlist durable storage failed: ${storage.reason}` }, { status: 500 });
+  }
+
   let email: EmailResult;
   try {
     email = await sendWaitlistEmail(workbookResult);
@@ -84,6 +107,7 @@ export async function POST(request: Request) {
       rowCount: workbookResult.rowCount,
       updatedExisting: workbookResult.updatedExisting
     },
+    storage,
     email
   });
 }
@@ -172,6 +196,53 @@ function readWaitlistRows(workbookPath: string): WaitlistRow[] {
     normalized["Submission Count"] = Number(normalized["Submission Count"] || 1);
     return normalized;
   });
+}
+
+async function persistWaitlistSubmission(
+  submission: NormalizedSubmission,
+  workbookResult: WorkbookResult
+): Promise<StorageResult> {
+  if (!isBlobStorageConfigured()) {
+    return {
+      persistent: false,
+      provider: "none",
+      reason: "Vercel Blob credentials are not configured."
+    };
+  }
+
+  const { put } = await import("@vercel/blob");
+  const submittedAt = String(workbookResult.row["Updated At"]);
+  const submissionId = createSubmissionId(submission.emailAddress, submittedAt);
+  const submissionPathname = `waitlist/submissions/${submissionId}.json`;
+  const exportPathname = `waitlist/exports/${submissionId}.xlsx`;
+  const payload = {
+    schemaVersion: 1,
+    id: submissionId,
+    submittedAt,
+    row: workbookResult.row,
+    columns: waitlistColumns
+  };
+
+  const submissionBlob = await put(submissionPathname, JSON.stringify(payload, null, 2), {
+    access: "private",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json"
+  });
+
+  const exportBlob = await put(exportPathname, readFileSync(workbookResult.path), {
+    access: "private",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+
+  return {
+    persistent: true,
+    provider: "vercel-blob",
+    submissionPathname: submissionBlob.pathname,
+    exportPathname: exportBlob.pathname
+  };
 }
 
 async function sendWaitlistEmail(workbookResult: WorkbookResult): Promise<EmailResult> {
@@ -267,6 +338,19 @@ function getEmailDestination() {
     .split(",")
     .map((email) => email.trim())
     .filter(Boolean);
+}
+
+function isBlobStorageConfigured() {
+  return Boolean(
+    process.env.BLOB_READ_WRITE_TOKEN ||
+      (process.env.BLOB_STORE_ID && process.env.VERCEL_OIDC_TOKEN)
+  );
+}
+
+function createSubmissionId(emailAddress: string, submittedAt: string) {
+  const timestamp = submittedAt.replace(/[^0-9A-Za-z-]/g, "-");
+  const emailHash = createHash("sha256").update(emailAddress).digest("hex").slice(0, 16);
+  return `${timestamp}-${emailHash}`;
 }
 
 function firstString(...values: unknown[]) {

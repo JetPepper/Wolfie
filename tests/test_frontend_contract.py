@@ -82,4 +82,7 @@ def test_uploaded_form_fields_are_mapped_to_backend_and_xlsx():
     assert "writeFileSync(workbookPath" in api
     assert "WOLFIE_WAITLIST_XLSX_PATH" in api
     assert "WOLFIE_WAITLIST_EMAIL_MODE" in api
+    assert "@vercel/blob" in api
+    assert "BLOB_READ_WRITE_TOKEN" in api
+    assert "WOLFIE_WAITLIST_DURABLE_REQUIRED" in api
     assert "RESEND_API_KEY" in api
