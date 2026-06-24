@@ -5,15 +5,22 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "build": "next build",
-    "lint": "eslint app --ext .ts,.tsx",
+    "lint": "eslint app tests/architecture",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "cd ../.. && playwright test",
-    "test:visual": "cd ../.. && playwright test"
+    "test:visual": "cd ../.. && playwright test",
+    "test:architecture:unit": "rm -rf .architecture-build && tsc -p tsconfig.architecture.json && node .architecture-build/tests/architecture/runtime-architecture.test.js",
+    "test:architecture:playwright": "cd ../.. && playwright test tests/runtime-access.spec.ts",
+    "scan:forbidden-visible": "node scripts/forbidden-visible-scan.mjs",
+    "scan:private-keys": "node scripts/private-key-scan.mjs",
+    "scan:cloud-fetch": "node scripts/cloud-fetch-scan.mjs",
+    "test:architecture": "corepack pnpm typecheck && corepack pnpm lint && corepack pnpm test:architecture:unit && corepack pnpm test:architecture:playwright && corepack pnpm scan:forbidden-visible && corepack pnpm scan:private-keys && corepack pnpm scan:cloud-fetch"
   },
   "dependencies": {
     "next": "16.2.9",
     "react": "19.0.0",
-    "react-dom": "19.0.0"
+    "react-dom": "19.0.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",
@@ -21,7 +28,7 @@
     "@types/react": "19.0.4",
     "@types/react-dom": "19.0.2",
     "autoprefixer": "10.4.20",
-    "eslint": "^8.57.1",
+    "eslint": "^9.39.4",
     "eslint-config-next": "16.2.9",
     "postcss": "8.4.49",
     "tailwindcss": "3.4.17",

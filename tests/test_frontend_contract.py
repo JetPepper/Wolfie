@@ -2,121 +2,84 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PAGE = ROOT / "apps" / "web" / "app" / "page.tsx"
-CSS = ROOT / "apps" / "web" / "app" / "globals.css"
-FORMAT = ROOT / "apps" / "web" / "app" / "lib" / "format.ts"
-FEES = ROOT / "apps" / "web" / "app" / "lib" / "fees.ts"
+WEB = ROOT / "apps" / "web"
+PUBLIC = WEB / "public"
+API_ROUTE = WEB / "app" / "api" / "waitlist" / "route.ts"
+NEXT_CONFIG = WEB / "next.config.ts"
 
 
 def read(path: Path) -> str:
     return path.read_text()
 
 
-def test_navigation_and_removed_copy_contract():
-    shell = read(PAGE)
-    visible_blocked = [
-        "Wolfie Alpha",
-        "Trading Bots",
-        "Wolfie Command Dashboard",
-        "Active bot",
-        "Selected Thought",
-        "Field Navigator",
-        "Bot Thought Preview",
-        "returns unknown",
+def test_uploaded_static_site_is_the_public_landing_surface():
+    index = PUBLIC / "index.html"
+    privacy = PUBLIC / "privacy.html"
+    terms = PUBLIC / "terms.html"
+
+    assert index.exists()
+    assert privacy.exists()
+    assert terms.exists()
+
+    html = read(index)
+    assert "Wolfie — Autonomous AI Trading Agents for Robinhood" in html
+    assert "The <span class=\"glow\">unfair advantage</span>" in html
+    assert "Join the pack." in html
+    assert "function submitWaitlist" in html
+    assert "fetch('/api/waitlist/'" in html
+    assert "TODO: wire to real backend" not in html
+
+
+def test_old_landing_and_generated_site_files_are_removed():
+    removed_paths = [
+        WEB / "app" / "page.tsx",
+        WEB / "app" / "globals.css",
+        WEB / "app" / "waitlist",
+        ROOT / "apps" / "site",
+        PUBLIC / "wolfie-hero-suite-bg.png",
+        PUBLIC / "wolfie-waitlist-card-reference.png",
+        PUBLIC / "wolfie-landing-hero-laptop.png",
+        PUBLIC / "source-icon-dashboard.png",
+        PUBLIC / "wolfie-logo.svg",
     ]
-    for text in ["Dashboard", "Bots", "Signal Console", "Activity", "Settings"]:
-        assert text in shell
-    for text in visible_blocked:
-        assert text not in shell
+
+    for path in removed_paths:
+        assert not path.exists(), f"old landing artifact remains: {path}"
 
 
-def test_onboarding_starting_capital_and_money_formatting_exist():
-    shell = read(PAGE)
-    fmt = read(FORMAT)
-    for text in [
-        "How much do you want Wolfie to trade with?",
-        "Starting Capital",
-        "formatMoney",
-        "minimumFractionDigits: 2",
-        "maximumFractionDigits: 2",
+def test_static_routes_point_to_uploaded_files():
+    config = read(NEXT_CONFIG)
+    assert 'source: "/"' in config
+    assert 'destination: "/index.html"' in config
+    assert 'source: "/privacy"' in config
+    assert 'destination: "/privacy.html"' in config
+    assert 'source: "/terms"' in config
+    assert 'destination: "/terms.html"' in config
+
+
+def test_uploaded_form_fields_are_mapped_to_backend_and_xlsx():
+    html = read(PUBLIC / "index.html")
+    api = read(API_ROUTE)
+
+    for field_id in ["wl-name", "wl-email", "wl-exp", "wl-int"]:
+        assert f'id="{field_id}"' in html
+        assert field_id in api or field_id.replace("wl-", "") in api
+
+    for backend_field in ["fullName", "emailAddress", "tradingExperience", "interest"]:
+        assert backend_field in html
+        assert backend_field in api
+
+    for header in [
+        "Full Name",
+        "Email Address",
+        "Trading Experience",
+        "Interest",
+        "Submission Count",
     ]:
-        assert text in shell or text in fmt
+        assert header in api
 
-
-def test_bots_have_deployment_and_settings_behavior():
-    shell = read(PAGE)
-    for text in [
-        "enabled: false",
-        "Deploy {bot.name}",
-        "Allocation Mode",
-        "Fixed Dollar Allocation",
-        "Percentage of Available Capital",
-        "Max Position Size",
-        "Stop-Loss",
-        "Take-Profit",
-        "rejectedSignals",
-        "Current analysis inputs",
-    ]:
-        assert text in shell
-
-
-def test_disclosure_and_other_bots_sections_exist_without_fake_returns():
-    shell = read(PAGE)
-    for text in [
-        "Public Disclosure Bots",
-        "Politicians",
-        "Public Figures",
-        "Insiders",
-        "Disclosure Cluster Scout",
-        "Other Bots",
-        "Custom watchlist bot",
-        "Awaiting audited return feed",
-    ]:
-        assert text in shell
-    assert "Not ranked" not in shell
-
-
-def test_signal_intelligence_contract():
-    shell = read(PAGE)
-    for text in [
-        "Signal Console",
-        "Time Scrub",
-        "Bot Lens",
-        "Market Processing Queue",
-        "Research Density",
-        "Rejected Alternatives",
-        "source",
-        "OrbitControls",
-    ]:
-        assert text in shell
-
-
-def test_activity_settings_sound_and_provider_contract():
-    shell = read(PAGE)
-    fees = read(FEES)
-    for text in [
-        "Enable Trade Sounds",
-        "playProfitChime",
-        "Provider Status",
-        "Live Market Feed",
-        "News and Trends",
-        "Public source links",
-        "Simulated / Live",
-        "Live trading is gated.",
-        "robinhoodStyleFeeSchedule",
-        "verifiedOn: \"2026-06-19\"",
-        "secSection31RatePerMillionSellPrincipal: 20.6",
-        "finraTradingActivityFeePerShareSell: 0.000166",
-    ]:
-        assert text in shell or text in fees
-
-
-def test_bot_animation_is_scoped_and_no_broken_image_path_contract():
-    css = read(CSS)
-    shell = read(PAGE)
-    for text in ["botIdle", "botPersonality", "botBlink", "prefers-reduced-motion"]:
-        assert text in css
-    for blocked in ["starDrift", "tickerRun", "corePulse", "nodeFloat", "avatarBreathe"]:
-        assert blocked not in css
-    assert "<img" not in shell
-    assert "Configuration required" not in shell
+    assert "XLSX.write(workbook" in api
+    assert "writeFileSync(workbookPath" in api
+    assert "WOLFIE_WAITLIST_XLSX_PATH" in api
+    assert "WOLFIE_WAITLIST_EMAIL_MODE" in api
+    assert "RESEND_API_KEY" in api

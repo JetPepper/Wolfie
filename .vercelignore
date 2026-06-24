@@ -1,0 +1,15 @@
+**/node_modules
+**/.next
+**/out
+**/.architecture-build
+**/test-results
+**/artifacts
+.venv
+data/*.sqlite
+data/*.sqlite3
+data/*.xlsx
+data/wolfie-waitlist-email.json
+__pycache__
+**/__pycache__
+*.pyc
+*.log

@@ -5,7 +5,10 @@ __pycache__/
 *.py[cod]
 data/*.sqlite
 data/*.sqlite3
+data/*.xlsx
+data/wolfie-waitlist-email.json
 apps/web/.next/
+apps/web/.architecture-build/
 apps/web/node_modules/
 apps/web/out/
 .DS_Store
@@ -15,3 +18,4 @@ artifacts/
 *.tsbuildinfo
 codex-file-inventory.txt
 codex-line-review.log
+.vercel

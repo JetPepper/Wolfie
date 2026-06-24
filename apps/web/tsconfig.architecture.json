@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".architecture-build",
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "target": "ES2020",
+    "jsx": "react-jsx"
+  },
+  "include": [
+    "app/lib/runtime/**/*.ts",
+    "tests/architecture/**/*.ts"
+  ]
+}
